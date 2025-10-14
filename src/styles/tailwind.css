@@ -1,0 +1,17 @@
+/* 中文说明：Tailwind 基础样式入口（全局） */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 自定义滚动条与应用容器细节（可按需调整） */
+:root {
+  color-scheme: light;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+/* 让 React Flow 与 Tailwind 风格和谐 */
+.react-flow__panel { font-size: 12px; }
+
