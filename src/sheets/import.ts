@@ -59,9 +59,10 @@ export function buildDiagramFromCsv(nodesCsv: string, edgesCsv: string): { nodes
     const label = r[nh['label']] || '';
     const color = r[nh['color']] || undefined;
     const width = r[nh['width']] ? Number(r[nh['width']]) : undefined;
+    const height = nh['height'] != null && nh['height'] >= 0 && r[nh['height']] ? Number(r[nh['height']]) : undefined;
     const x = r[nh['x']] ? Number(r[nh['x']]) : 0;
     const y = r[nh['y']] ? Number(r[nh['y']]) : 0;
-    return { id, type, position: { x, y }, data: { label, color, width } } as Node;
+    return { id, type, position: { x, y }, data: { label, color, width, height } } as Node;
   });
 
   const edges: Edge[] = edgeData.map((r) => {
@@ -99,4 +100,3 @@ export async function importFromSheets(files: FileList): Promise<{ nodes: Node[]
   if (!nodesText || !edgesText) return null;
   return buildDiagramFromCsv(nodesText, edgesText);
 }
-

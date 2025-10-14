@@ -1,0 +1,23 @@
+{
+  "sidebar.title": "Components",
+  "panel.node": "Node",
+  "panel.edge": "Edge",
+  "panel.label": "Label",
+  "panel.formulaLabel": "Formula Label (optional)",
+  "panel.color": "Color",
+  "panel.type": "Type",
+  "panel.none": "Nothing selected",
+  "panel.multi": "Multi-select",
+  "panel.prefix": "Label Prefix",
+  "panel.apply": "Apply",
+  "edge.color": "Stroke Color",
+  "edge.label": "Edge Label",
+  "toolbar.language": "Language",
+  "toolbar.align": "Align",
+  "toolbar.distribute": "Distribute",
+  "toolbar.snap": "Snap",
+  "toolbar.grid": "Grid",
+  "toolbar.fit": "Fit",
+  "toolbar.center": "Center",
+  "canvas.overlay": "Zoom: {{z}}% • Nodes: {{n}} • Edges: {{e}}"
+}

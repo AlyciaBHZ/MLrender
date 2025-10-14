@@ -1,0 +1,23 @@
+{
+  "sidebar.title": "组件",
+  "panel.node": "节点",
+  "panel.edge": "连线",
+  "panel.label": "标签",
+  "panel.formulaLabel": "公式标签（可选）",
+  "panel.color": "颜色",
+  "panel.type": "类型",
+  "panel.none": "无选中项",
+  "panel.multi": "多选",
+  "panel.prefix": "标签前缀",
+  "panel.apply": "应用",
+  "edge.color": "线条颜色",
+  "edge.label": "连线标签",
+  "toolbar.language": "语言",
+  "toolbar.align": "对齐",
+  "toolbar.distribute": "分布",
+  "toolbar.snap": "吸附",
+  "toolbar.grid": "网格",
+  "toolbar.fit": "适配视图",
+  "toolbar.center": "居中",
+  "canvas.overlay": "缩放：{{z}}% • 节点：{{n}} • 连线：{{e}}"
+}

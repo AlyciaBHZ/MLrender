@@ -16,13 +16,16 @@
     "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
+      "@/*": ["src/*"],
       "@/components/*": ["src/components/*"],
       "@/diagram/*": ["src/diagram/*"],
       "@/nodes/*": ["src/nodes/*"],
       "@/utils/*": ["src/utils/*"],
       "@/assets/*": ["src/assets/*"],
       "@/edges/*": ["src/edges/*"],
-      "@/sheets/*": ["src/sheets/*"]
+      "@/sheets/*": ["src/sheets/*"],
+      "@/i18n": ["src/i18n/index.ts"],
+      "@/i18n/*": ["src/i18n/*"]
     }
   },
   "include": ["src"],

@@ -27,8 +27,10 @@ export function exportNodesCsv(nodes: Node[], filename = 'nodes.csv') {
     n.id,
     n.type || '',
     (n.data as any)?.label ?? '',
+    (n.data as any)?.formulaLabel ?? '',
     (n.data as any)?.color ?? '',
     (n.data as any)?.width ?? '',
+    (n.data as any)?.height ?? '',
     n.position.x,
     n.position.y,
   ]);
@@ -56,4 +58,3 @@ export function exportToSheets(nodes: Node[], edges: Edge[], withTimestamp = fal
   exportNodesCsv(nodes, `nodes${ts}.csv`);
   exportEdgesCsv(edges, `edges${ts}.csv`);
 }
-

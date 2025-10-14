@@ -6,6 +6,8 @@ import { useDiagramStore } from './diagram/DiagramState';
 import { toPng } from 'html-to-image';
 import Toolbar from './components/Toolbar';
 import { exportToSheets, importFromSheets } from '@/sheets/index';
+import LangSwitch from '@/components/LangSwitch';
+import QuickPanel from '@/components/QuickPanel';
 
 // 中文说明：主布局组件，左侧预留图标侧边栏，中间为画布，右侧为属性面板占位
 export default function App() {
@@ -217,6 +219,8 @@ export default function App() {
       {/* 中间画布 */}
       <main className="relative bg-white">
         <DiagramCanvas />
+        <LangSwitch />
+        <QuickPanel />
       </main>
 
       {/* 右侧属性面板 */}
