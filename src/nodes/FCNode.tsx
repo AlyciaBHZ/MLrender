@@ -17,10 +17,7 @@ export default function FCNode({ data, selected }: NodeProps<FCNodeData>) {
     () => ({
       borderColor: color,
       backgroundColor: hexToRgba(color, 0.08),
-      borderRadius: 9999,
-      boxShadow: selected ? `0 0 0 2px ${hexToRgba(color, 0.35)}` : undefined,
-      width: '100%',
-      height: '100%'
+      boxShadow: selected ? `0 0 0 3px hsl(var(--mlcd-hover) / 0.25)` : undefined,
     }),
     [color, selected]
   );
@@ -28,15 +25,15 @@ export default function FCNode({ data, selected }: NodeProps<FCNodeData>) {
   const handleStyle = useMemo(() => ({ backgroundColor: color }), [color]);
 
   return (
-    <div className="rounded-md border bg-white shadow-sm px-3 py-2 min-w-[100px] min-h-[56px] relative select-none" style={containerStyle}>
+    <div className="rounded-full border bg-white shadow-sm px-3 py-2 min-w-[100px] min-h-[56px] w-full h-full relative select-none" style={containerStyle} data-node-type="fc" data-type="fc" data-role="core" aria-label={label}>
       <NodeResizer minWidth={100} minHeight={56} isVisible={selected} />
       <NodeMarker variant={variant} />
       <div className="text-xs text-gray-500">Dense / Linear</div>
-      <div className="text-sm font-medium text-gray-800 truncate" title={label}>
+      <div className="text-sm font-medium text-gray-800 truncate text-center" title={label}>
         {formulaLabel ? <MathText text={formulaLabel} enabled /> : label}
       </div>
-      <Handle type="target" position={Position.Left} className="w-2 h-2" style={handleStyle} />
-      <Handle type="source" position={Position.Right} className="w-2 h-2" style={handleStyle} />
+      <Handle type="target" position={Position.Left} className="w-2 h-2 rounded-full" style={handleStyle} data-port="in" data-slot="0" />
+      <Handle type="source" position={Position.Right} className="w-2 h-2 rounded-full" style={handleStyle} data-port="out" data-slot="0" />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Handle, Position, type NodeProps } from 'reactflow';
 import { hexToRgba } from '@/utils/color';
+import { NodeRoleColor } from '@/ui/tokens';
 import { NodeResizer } from '@reactflow/node-resizer';
 import MathText from '@/components/MathText';
 
@@ -9,39 +10,39 @@ export type ConvNodeData = { label?: string; color?: string; formulaLabel?: stri
 export default function ConvNode({ data, selected }: NodeProps<ConvNodeData>) {
   const label = data?.label ?? 'Conv Layer';
   const formulaLabel = data?.formulaLabel;
-  const color = data?.color ?? '#f59e0b';
+  const color = data?.color ?? NodeRoleColor.conv;
 
   const containerStyle = useMemo(
     () => ({
       borderColor: color,
       backgroundColor: hexToRgba(color, 0.08),
-      width: '100%',
-      height: '100%',
-      boxShadow: selected ? `0 0 0 2px ${hexToRgba(color, 0.35)}` : undefined,
+      boxShadow: selected ? `0 0 0 3px hsl(var(--mlcd-hover) / 0.25)` : undefined,
     }),
     [color, selected]
   );
-  const handleStyle = useMemo(() => ({ backgroundColor: color }), [color]);
+  const handleStyle = useMemo(() => ({ color }), [color]);
 
   return (
-    <div className="rounded-md border bg-white shadow-sm px-3 py-2 min-w-[120px] min-h-[72px] relative select-none" style={containerStyle}>
+    <div className="rounded-[8px] border bg-white shadow-sm px-3 py-2 min-w-[120px] min-h-[72px] w-full h-full relative select-none" style={containerStyle} data-node-type="conv" data-type="conv" data-role="core" aria-label={label}>
       <NodeResizer minWidth={120} minHeight={72} isVisible={selected} />
       <div className="text-xs text-gray-500">Conv</div>
       <div className="my-1">
         <svg viewBox="0 0 140 70" width="100%" height="48" xmlns="http://www.w3.org/2000/svg">
-          <rect x="38" y="10" width="82" height="48" rx="4" fill="#fff" stroke={color} strokeOpacity="0.45"/>
-          <rect x="24" y="6" width="82" height="48" rx="4" fill="#fff" stroke={color} strokeOpacity="0.7"/>
-          <rect x="10" y="2" width="82" height="48" rx="4" fill="#fff" stroke={color} strokeWidth="2"/>
+          <g data-selected={selected ? 'true' : undefined}>
+            <rect x="38" y="10" width="82" height="48" rx="4" fill="#fff" stroke="hsl(var(--mlcd-stroke))" strokeOpacity="0.45" strokeWidth="1.25"/>
+            <rect x="24" y="6" width="82" height="48" rx="4" fill="#fff" stroke="hsl(var(--mlcd-stroke))" strokeOpacity="0.7" strokeWidth="1.25"/>
+            <rect x="10" y="2" width="82" height="48" rx="4" fill="#fff" stroke="hsl(var(--mlcd-stroke))" strokeWidth="1.25"/>
+          </g>
           <g opacity="0.15">
             <rect x="44" y="58" width="60" height="6" rx="3" fill="#000" />
           </g>
         </svg>
       </div>
-      <div className="text-sm font-medium text-gray-800 truncate" title={label}>
+      <div className="text-sm font-medium text-gray-800 truncate text-center" title={label}>
         {formulaLabel ? <MathText text={formulaLabel} enabled /> : label}
       </div>
-      <Handle type="target" position={Position.Left} className="w-2 h-2" style={handleStyle} />
-      <Handle type="source" position={Position.Right} className="w-2 h-2" style={handleStyle} />
+      <Handle type="target" position={Position.Left} className="handle-touch" style={handleStyle} data-port="in" data-slot="0" />
+      <Handle type="source" position={Position.Right} className="handle-touch" style={handleStyle} data-port="out" data-slot="0" />
     </div>
   );
 }

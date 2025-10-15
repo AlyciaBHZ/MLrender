@@ -9,3 +9,4 @@ export default function FCLayerIcon({ className = 'w-6 h-6' }: { className?: str
     </svg>
   );
 }
+

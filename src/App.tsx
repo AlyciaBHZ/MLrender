@@ -1,15 +1,15 @@
-import React, { useEffect, useRef } from 'react';
+﻿import React, { useEffect, useRef } from 'react';
 import DiagramCanvas from './diagram/DiagramCanvas';
 import Sidebar from './components/Sidebar';
 import PropertiesPanel from './components/PropertiesPanel';
 import { useDiagramStore } from './diagram/DiagramState';
-import { toPng } from 'html-to-image';
+import { toPng, toSvg } from 'html-to-image';
 import Toolbar from './components/Toolbar';
 import { exportToSheets, importFromSheets } from '@/sheets/index';
 import LangSwitch from '@/components/LangSwitch';
 import QuickPanel from '@/components/QuickPanel';
 
-// 中文说明：主布局组件，左侧预留图标侧边栏，中间为画布，右侧为属性面板占位
+// ä¸­æ–‡è¯´æ˜Žï¼šä¸»å¸ƒå±€ç»„ä»¶ï¼Œå·¦ä¾§é¢„ç•™å›¾æ ‡ä¾§è¾¹æ ï¼Œä¸­é—´ä¸ºç”»å¸ƒï¼Œå³ä¾§ä¸ºå±žæ€§é¢æ¿å ä½
 export default function App() {
   const setDiagram = useDiagramStore((s) => s.setDiagram);
   const nodes = useDiagramStore((s) => s.nodes);
@@ -36,31 +36,44 @@ export default function App() {
       const text = await file.text();
       const parsed = JSON.parse(text);
       if (Array.isArray(parsed.nodes) && Array.isArray(parsed.edges)) {
-        // P3: 使用 Zustand 的 setNodes / setEdges 重新渲染画布
+        // P3: ä½¿ç”¨ Zustand çš„ setNodes / setEdges é‡æ–°æ¸²æŸ“ç”»å¸ƒ
         setNodes(parsed.nodes);
         setEdges(parsed.edges);
       } else {
-        alert('JSON 格式无效：需要 { nodes: [], edges: [] }');
+        alert('JSON æ ¼å¼æ— æ•ˆï¼šéœ€è¦ { nodes: [], edges: [] }');
       }
     } catch (err) {
-      alert('解析失败，请检查 JSON 文件');
+      alert('è§£æžå¤±è´¥ï¼Œè¯·æ£€æŸ¥ JSON æ–‡ä»¶');
     } finally {
       e.target.value = '';
     }
   };
 
+  const EXPORT_PIXEL_RATIO = 3; // HD export per spec (2x/3x)
   const onExportPNG = async () => {
     const el = document.getElementById('diagram-canvas');
     if (!el) return;
     const dataUrl = await toPng(el, {
       cacheBust: true,
-      pixelRatio: 2,
+      pixelRatio: EXPORT_PIXEL_RATIO,
       backgroundColor: '#ffffff',
     });
     const a = document.createElement('a');
     a.href = dataUrl;
     a.download = 'mlcd-canvas.png';
     a.click();
+  };
+  const onExportSVG = async () => {
+    const el = document.getElementById('diagram-canvas');
+    if (!el) return;
+    const svg = await toSvg(el, { cacheBust: true, backgroundColor: '#ffffff' });
+    const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'mlcd-canvas.svg';
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const onExportSheets = () => exportToSheets(nodes, edges, true);
@@ -73,18 +86,18 @@ export default function App() {
     try {
       const result = await importFromSheets(files);
       if (!result) {
-        alert('请同时选择包含节点与连线的 CSV（nodes.csv 和 edges.csv）');
+        alert('è¯·åŒæ—¶é€‰æ‹©åŒ…å«èŠ‚ç‚¹ä¸Žè¿žçº¿çš„ CSVï¼ˆnodes.csv å’Œ edges.csvï¼‰');
         return;
       }
       setDiagram(result);
     } catch (err) {
-      alert('导入失败，请检查 CSV 格式');
+      alert('å¯¼å…¥å¤±è´¥ï¼Œè¯·æ£€æŸ¥ CSV æ ¼å¼');
     } finally {
       e.target.value = '';
     }
   };
 
-  // 本地自动保存（localStorage，防抖）
+  // æœ¬åœ°è‡ªåŠ¨ä¿å­˜ï¼ˆlocalStorageï¼Œé˜²æŠ–ï¼‰
   useEffect(() => {
     const h = setTimeout(() => {
       const data = { nodes, edges };
@@ -95,7 +108,7 @@ export default function App() {
     return () => clearTimeout(h);
   }, [nodes, edges]);
 
-  // 初始加载（如存在本地缓存）
+  // åˆå§‹åŠ è½½ï¼ˆå¦‚å­˜åœ¨æœ¬åœ°ç¼“å­˜ï¼‰
   useEffect(() => {
     try {
       const text = localStorage.getItem('mlcd-diagram');
@@ -106,11 +119,11 @@ export default function App() {
         }
       }
     } catch {}
-    // 仅首次执行
+    // ä»…é¦–æ¬¡æ‰§è¡Œ
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 键盘快捷键
+  // é”®ç›˜å¿«æ·é”®
   const removeSelected = useDiagramStore((s) => s.removeSelected);
   const duplicateSelected = useDiagramStore((s) => s.duplicateSelected);
   const setSnapToGrid = useDiagramStore((s) => s.setSnapToGrid);
@@ -120,36 +133,45 @@ export default function App() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      // 删除
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) {
+          useDiagramStore.getState().redo();
+        } else {
+          useDiagramStore.getState().undo();
+        }
+        return;
+      }
+      // åˆ é™¤
       if (e.key === 'Delete' || e.key === 'Backspace') {
         removeSelected();
       }
-      // 复制
+      // å¤åˆ¶
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'd') {
         e.preventDefault();
         duplicateSelected();
       }
-      // 保存
+      // ä¿å­˜
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
         e.preventDefault();
         onSaveJSON();
       }
-      // 加载
+      // åŠ è½½
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'o') {
         e.preventDefault();
         onLoadJSONClick();
       }
-      // 导出 PNG
+      // å¯¼å‡º PNG
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'e') {
         e.preventDefault();
         onExportPNG();
       }
-      // 拟合视图
+      // æ‹Ÿåˆè§†å›¾
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
         e.preventDefault();
         window.dispatchEvent(new Event('mlcd-fit-view'));
       }
-      // 切换吸附
+      // åˆ‡æ¢å¸é™„
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'g') {
         e.preventDefault();
         setSnapToGrid(!snapToGrid);
@@ -161,14 +183,14 @@ export default function App() {
 
   return (
     <div className="h-screen w-screen grid grid-cols-[260px_1fr_300px] grid-rows-[auto_1fr]">
-      {/* 顶部栏：左-标题，中-编辑工具，右-数据按钮 */}
+      {/* é¡¶éƒ¨æ ï¼šå·¦-æ ‡é¢˜ï¼Œä¸­-ç¼–è¾‘å·¥å…·ï¼Œå³-æ•°æ®æŒ‰é’® */}
       <header className="col-span-3 h-12 px-4 grid grid-cols-[auto_1fr_auto] items-center border-b bg-white gap-4">
-        <h1 className="text-sm font-semibold text-gray-800">ML Concept Designer · MVP</h1>
+        <h1 className="text-sm font-semibold text-gray-800">ML Concept Designer Â· MVP</h1>
 
-        {/* 中间：编辑工具 */}
+        {/* ä¸­é—´ï¼šç¼–è¾‘å·¥å…· */}
         <div className="flex items-center gap-3 justify-center">
           <Toolbar />
-          {/* Snap 控件 */}
+          {/* Snap æŽ§ä»¶ */}
           <label className="flex items-center gap-1 text-xs text-gray-700">
             <input type="checkbox" checked={snapToGrid} onChange={(e) => setSnapToGrid(e.target.checked)} /> Snap
           </label>
@@ -191,40 +213,41 @@ export default function App() {
             className="text-xs px-2 py-1 rounded border hover:bg-gray-50"
             onClick={() => window.dispatchEvent(new Event('mlcd-fit-view'))}
           >
-            适配视图
+            é€‚é…è§†å›¾
           </button>
           <button
             className="text-xs px-2 py-1 rounded border hover:bg-gray-50"
             onClick={() => window.dispatchEvent(new Event('mlcd-center'))}
           >
-            重置中心
+            é‡ç½®ä¸­å¿ƒ
           </button>
         </div>
 
-        {/* 右侧：数据持久化按钮 */}
+        {/* å³ä¾§ï¼šæ•°æ®æŒä¹…åŒ–æŒ‰é’® */}
         <div className="flex items-center gap-2 justify-end">
-          <button className="text-xs px-2 py-1 rounded border hover:bg-gray-50" onClick={onSaveJSON} aria-label="保存 JSON">保存 JSON</button>
-          <button className="text-xs px-2 py-1 rounded border hover:bg-gray-50" onClick={onLoadJSONClick} aria-label="加载 JSON">加载 JSON</button>
-          <button className="text-xs px-2 py-1 rounded border hover:bg-gray-50" onClick={onExportPNG} aria-label="导出 PNG">导出 PNG</button>
-          <button className="text-xs px-2 py-1 rounded border hover:bg-gray-50" onClick={onExportSheets} aria-label="导出表格">导出表格</button>
-          <button className="text-xs px-2 py-1 rounded border hover:bg-gray-50" onClick={onImportSheetsClick} aria-label="导入表格">导入表格</button>
+          <button className="text-xs px-2 py-1 rounded border hover:bg-gray-50" onClick={onSaveJSON} aria-label="ä¿å­˜ JSON">ä¿å­˜ JSON</button>
+          <button className="text-xs px-2 py-1 rounded border hover:bg-gray-50" onClick={onLoadJSONClick} aria-label="åŠ è½½ JSON">åŠ è½½ JSON</button>
+          <button className="text-xs px-2 py-1 rounded border hover:bg-gray-50" onClick={onExportPNG} aria-label="å¯¼å‡º PNG">å¯¼å‡º PNG</button>
+          <button className="text-xs px-2 py-1 rounded border hover:bg-gray-50" onClick={onExportSheets} aria-label="å¯¼å‡ºè¡¨æ ¼">å¯¼å‡ºè¡¨æ ¼</button>
+          <button className="text-xs px-2 py-1 rounded border hover:bg-gray-50" onClick={onImportSheetsClick} aria-label="å¯¼å…¥è¡¨æ ¼">å¯¼å…¥è¡¨æ ¼</button>
           <input ref={fileInputRef} type="file" accept="application/json" className="hidden" onChange={onFileChange} />
           <input ref={csvInputRef} type="file" accept=".csv" multiple className="hidden" onChange={onImportSheets} />
         </div>
       </header>
 
-      {/* 左侧图标面板 */}
+      {/* å·¦ä¾§å›¾æ ‡é¢æ¿ */}
       <Sidebar />
 
-      {/* 中间画布 */}
-      <main className="relative bg-white">
+      {/* ä¸­é—´ç”»å¸ƒ */}
+      <main className="relative bg-mlcd-canvas">
         <DiagramCanvas />
         <LangSwitch />
         <QuickPanel />
       </main>
 
-      {/* 右侧属性面板 */}
+      {/* å³ä¾§å±žæ€§é¢æ¿ */}
       <PropertiesPanel />
     </div>
   );
 }
+

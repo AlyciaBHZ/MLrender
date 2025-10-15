@@ -5,11 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <title>ML Concept Designer (MVP)</title>
+    <!-- Inter font (optional). Falls back to system UI if offline. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <!-- KaTeX for LaTeX/Formula rendering (optional; offline-friendly via CDN) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
   </head>
-  <body class="antialiased">
+  <body class="antialiased font-sans">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

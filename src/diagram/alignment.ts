@@ -1,4 +1,5 @@
 import type { Node } from 'reactflow';
+import { useDiagramStore } from './DiagramState';
 
 // 中文说明：对齐与分布算法——在选中节点集合上应用位置调整
 export type AlignOp = 'left' | 'centerX' | 'right' | 'top' | 'centerY' | 'bottom';
@@ -61,3 +62,53 @@ export function distribute(nodes: Node[], op: DistributeOp): Node[] {
   return Object.values(byId);
 }
 
+export function alignNodes(op: AlignOp): Node[] {
+  const { nodes, setNodes } = useDiagramStore.getState();
+  const snap = useDiagramStore.getState().snapGrid?.[0] ?? 8;
+  const selectedNodes = nodes.filter((n) => n.selected);
+  if (selectedNodes.length < 2) return selectedNodes;
+  const next = align(nodes, op).map((n) => {
+    if (!n.selected) return n;
+    const x = Math.round(n.position.x / snap) * snap;
+    const y = Math.round(n.position.y / snap) * snap;
+    return { ...n, position: { ...n.position, x, y } };
+  });
+  setNodes(next);
+  return selectedNodes;
+}
+
+export function distributeNodes(op: DistributeOp): Node[] {
+  const { nodes, setNodes } = useDiagramStore.getState();
+  const snap = useDiagramStore.getState().snapGrid?.[0] ?? 8;
+  const selectedNodes = nodes.filter((n) => n.selected);
+  if (selectedNodes.length < 3) return selectedNodes;
+  const next = distribute(nodes, op).map((n) => {
+    if (!n.selected) return n;
+    const x = Math.round(n.position.x / snap) * snap;
+    const y = Math.round(n.position.y / snap) * snap;
+    return { ...n, position: { ...n.position, x, y } };
+  });
+  setNodes(next);
+  return selectedNodes;
+}
+
+export function AlignLeft() {
+  return alignNodes('left');
+}
+
+export function AlignTop() {
+  return alignNodes('top');
+}
+
+export function DistributeHorizontal() {
+  return distributeNodes('horiz');
+}
+
+export function DistributeVertical() {
+  return distributeNodes('vert');
+}
+
+export function groupSelectedNodes(label = 'Group') {
+  const { groupSelectedIntoNewGroup } = useDiagramStore.getState() as any;
+  groupSelectedIntoNewGroup(label);
+}

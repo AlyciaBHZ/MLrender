@@ -6,6 +6,61 @@
 /* 自定义滚动条与应用容器细节（可按需调整） */
 :root {
   color-scheme: light;
+  /* Theming variables (HSL space-separated for Tailwind opacity support) */
+  --mlcd-primary: 221 83% 53%;   /* #2563eb */
+  --mlcd-success: 142 71% 45%;   /* #16a34a */
+  --mlcd-warning: 38 92% 50%;    /* #f59e0b */
+  --mlcd-danger: 0 84% 60%;      /* #ef4444 */
+  --mlcd-info: 199 90% 48%;      /* #0ea5e9 */
+  --mlcd-neutral: 217 11% 45%;   /* #6b7280 */
+}
+
+/* ML-CD Core tokens (HSL) */
+:root {
+  /* Core surface & stroke */
+  --mlcd-canvas: 210 20% 98%;        /* Canvas background */
+  --mlcd-grid-dot: 210 16% 90%;      /* Grid dots */
+  --mlcd-stroke: 220 18% 28%;        /* Outlines */
+  --mlcd-label: 222 36% 18%;         /* Primary text */
+  --mlcd-muted-label: 220 10% 45%;   /* Secondary text */
+
+  /* Category hues */
+  --mlcd-linear: 255 85% 85%;        /* Linear (light violet) */
+  --mlcd-linear-alt: 215 92% 85%;    /* Linear alt (light blue) */
+  --mlcd-activation-g: 150 65% 45%;  /* Activation green */
+  --mlcd-activation-o: 30 90% 55%;   /* Activation orange */
+  --mlcd-data: 220 70% 45%;          /* Data deep blue */
+  --mlcd-data-neutral: 220 8% 60%;   /* Data neutral gray */
+  --mlcd-aux: 355 80% 55%;           /* Aux red */
+  --mlcd-loss: 355 78% 48%;          /* Loss red */
+  --mlcd-optimizer: 220 68% 42%;     /* Optimizer deep blue */
+
+  /* State */
+  --mlcd-selected: 260 90% 60%;
+  --mlcd-hover: 260 90% 70%; /* alpha applied in CSS where needed */
+
+  /* Elevation & shadows (for PNG export) */
+  --mlcd-shadow: 0 2px 8px hsl(220 20% 20% / 0.12);
+}
+
+/* Dark theme override */
+.dark, [data-theme="dark"] {
+  --mlcd-canvas: 220 15% 12%;
+  --mlcd-grid-dot: 220 10% 22%;
+  --mlcd-stroke: 210 14% 80%;
+  --mlcd-label: 0 0% 100%;
+  --mlcd-muted-label: 210 10% 70%;
+}
+
+/* Optional dark theme example */
+[data-theme="dark"], .theme-dark {
+  color-scheme: dark;
+  --mlcd-primary: 213 94% 68%;   /* #60a5fa */
+  --mlcd-success: 142 72% 59%;   /* #4ade80 */
+  --mlcd-warning: 28 95% 72%;    /* #fdba74 */
+  --mlcd-danger: 0 90% 63%;      /* #f87171 */
+  --mlcd-info: 199 93% 60%;      /* #38bdf8 */
+  --mlcd-neutral: 220 9% 66%;    /* #9ca3af */
 }
 
 html, body, #root {
@@ -15,3 +70,56 @@ html, body, #root {
 /* 让 React Flow 与 Tailwind 风格和谐 */
 .react-flow__panel { font-size: 12px; }
 
+/* Selection styling: edges and handles */
+.react-flow__edge.selected .react-flow__edge-path,
+.react-flow__edge.selected path {
+  stroke-width: 1.5px !important;
+}
+
+.react-flow__node .react-flow__handle {
+  border-radius: 9999px;
+  transition: box-shadow 120ms ease;
+}
+
+.react-flow__node .react-flow__handle:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px hsl(var(--mlcd-hover) / 0.35);
+}
+
+.react-flow__node:focus-within {
+  outline: 2px solid hsl(var(--mlcd-hover) / 0.4);
+  outline-offset: 2px;
+}
+
+/* Selected state inside SVG content: bump stroke width */
+svg g[data-selected="true"] path,
+svg g[data-selected="true"] rect,
+svg g[data-selected="true"] polygon,
+svg g[data-selected="true"] line,
+svg g[data-selected="true"] circle {
+  stroke-width: 1.5 !important;
+}
+
+/* Touch-friendly handle: invisible 24px hit area with 8px visible dot */
+.handle-touch {
+  width: 24px !important;
+  height: 24px !important;
+  background: transparent !important;
+  position: relative;
+}
+.handle-touch::after {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: currentColor;
+}
+
+.react-flow__node.selected .react-flow__handle {
+  /* Outer ring for selected state */
+  box-shadow: 0 0 0 3px hsl(var(--mlcd-hover) / 0.35);
+}

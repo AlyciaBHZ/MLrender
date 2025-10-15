@@ -39,6 +39,17 @@
 - 开发：`npm run dev` → 访问 `http://localhost:5173`
 - 构建：`npm run build`
 
+## 自监督进度跟踪 (P3.2 / P3.3 / P5.1)
+- 更新时间: 2025-10-14
+- P3.2 对齐/分布 (F_ALIGN): [x] 已完成 — 见 `src/components/Toolbar.tsx`；参阅本文件章节“Update: P3.2 (F_ALIGN)”。
+- P3.3（待明确）: [ ] 未开始 — 下一步：明确需求与验收标准，设计交互与状态变更方案。
+- P5.1（待明确）: [ ] 未开始 — 下一步：界定范围（如：导出/分享/性能等），拆分子任务与依赖。
+
+维护规则（自监督）：
+- 涉及上述条目的实现/重构/回归修复，请同步更新本节状态与“Update:”小节的一行摘要。
+- 若条目定义或范围调整，请先在本节修正文案，再开展开发工作。
+- 维护命令：`npm run progress:date` 自动更新本节“更新时间”。
+
 ## 技术栈（Core Technology Stack）
 - React 18 + TypeScript 5
 - Vite 5 + @vitejs/plugin-react
@@ -165,3 +176,147 @@
 更新日志（简）
 - 本次：新增“项目进度追踪”段落，并同步勾选已完成项。
 
+
+## Update: P3.2 (F_ALIGN)
+- Added icon-based alignment/distribution controls to toolbar
+- Added a compact align/distribute group near the Undo/Redo shortcut area for quick access
+- File: `src/components/Toolbar.tsx`
+- Added exported helpers: `AlignLeft`, `AlignTop`, `DistributeHorizontal`, `DistributeVertical` in `src/diagram/alignment.ts`
+
+## Update: P3.3 (F_GROUP)
+- Added new group node type `groupNode` with dashed rectangle border
+- Files:
+  - `src/nodes/GroupNode.tsx`
+  - `src/diagram/DiagramCanvas.tsx` (registered in `nodeTypes`)
+- Grouping actions in store:
+  - `groupSelectedIntoNewGroup(label?)`: wrap selected nodes into a new group node (auto size with padding)
+  - `groupSelectedInto(groupId)`: move selected nodes into an existing group
+  - `ungroupSelected()`: lift selected nodes out to root coordinates
+- Toolbar: added grouping buttons (Group/Ungroup) near the alignment cluster — `src/components/Toolbar.tsx`
+- Added helper: `groupSelectedNodes(label?)` in `src/diagram/alignment.ts` (wraps store action)
+ - Added utilities: `getSelectedBounds()` and `createGroupNodeFromSelection(label?, padding?)` in `src/diagram/grouping.ts`
+## Update: P3.1 (F_UNDO) — UI Integration
+- Added Undo/Redo buttons in toolbar (↶ / ↷), with keyboard shortcuts preserved.
+- File: `src/components/Toolbar.tsx`
+## Update: P3.1 (F_UNDO) — API Exposure
+- Exposed store methods: undo() and redo() for external usage
+- Files:
+  - src/diagram/DiagramState.ts — methods are included in the store API
+  - src/App.tsx — keyboard shortcuts call useDiagramStore.getState().undo()/redo()
+## Update: CSV Schema — formulaLabel persistence
+- Nodes CSV adds ormula column (after label)
+- Export: src/sheets/export.ts writes data.formulaLabel to ormula
+- Import: src/sheets/import.ts reads ormula into data.formulaLabel
+
+## Update: PropertiesPanel i18n cleanup
+- Rewrote src/components/PropertiesPanel.tsx to use i18next (	())
+- Unified labels for node/edge editors and removed garbled strings
+
+### 高级阶段（P3/P4 进度，自监督跟踪）
+- 说明：以下条目用于核心自监督机制，后续每次代码输出后同步更新状态。
+- [ ] P3.1（待定义）
+- [ ] P3.2（待定义）
+- [ ] P3.3（待定义）
+- [ ] P3.4（待定义）
+- [ ] P4.1（待定义）
+
+## Update: P3.1 (F_UNDO)
+- Added undo/redo history to Zustand store with past/future stacks (max 50).
+- Wrapped mutating actions to record snapshots; skip during undo/redo.
+- Keyboard shortcuts: Ctrl/Cmd+Z (undo), Shift+Ctrl/Cmd+Z (redo).
+- Files: src/diagram/DiagramState.ts, src/App.tsx (key handler)
+
+## Update: P3.1 (F_UNDO) — Middleware
+- Wrapped Zustand store with devtools middleware for better debugging.
+- File: src/diagram/DiagramState.ts (create(devtools(..., { name: 'diagram-store' })))
+
+## Update: P3.4 (F_SMOOTH)
+- Deprecated: previous global smoothstep default.
+- Now: default edges are straight with arrow markers and mlcd-stroke per UI spec.
+- File: src/diagram/DiagramCanvas.tsx (ReactFlow props)
+
+
+## Update: P4.1 (F_DETAIL)
+- Sidebar data source refactored to tree structure (nested categories and items)
+- Recursive rendering added for nested sections; search supports tree filtering
+- File: src/components/Sidebar.tsx
+
+
+
+## Update: P4.1 (F_DETAIL)
+- Sidebar data source refactored to tree structure (nested categories and items)
+- Recursive rendering added for nested sections; search supports tree filtering
+- File: src/components/Sidebar.tsx
+- Added new basic unit: Neuron node (CircleNode-based) under Core Layers → Basic Units
+
+
+
+## Update: P4.1 (F_DETAIL)
+- Sidebar data source refactored to tree structure (nested categories and items)
+- Recursive rendering added for nested sections; search supports tree filtering
+- File: src/components/Sidebar.tsx
+- Added new basic unit: Neuron node (CircleNode-based) under Core Layers -> Basic Units
+- Added new item: MLP Layers (Core Layers -> Linear & Activation)
+
+
+
+## Update: P4.1 (F_DETAIL)
+- Added new category: 辅助功能层 (Auxiliary Layers) with subgroup 正则化约束 (Regularization) and item Dropout
+- Added new category: 激活函数 (Activation Functions) → 常见激活函数，新增 Tanh、Sigmoid
+- File: src/components/Sidebar.tsx
+
+## Update: Activation Icons (Tanh/Sigmoid)
+- Added function-specific circular icons:
+  - src/assets/icons/TanhIcon.tsx (saturating tanh-like curve)
+  - src/assets/icons/SigmoidIcon.tsx (logistic-like curve)
+- Sidebar wired to use new icons for Tanh/Sigmoid
+
+
+## Update: New Node & Icon — Neuron
+- Added solid-circle Neuron icon and node type
+- Files:
+  - src/assets/icons/NeuronIcon.tsx
+  - src/nodes/NeuronNode.tsx (solid filled circle, resizable)
+  - src/diagram/DiagramCanvas.tsx (registered as neuronNode)
+  - src/components/Sidebar.tsx (Neuron now uses neuronNode + NeuronIcon)
+
+## Update: MLP Layers Node
+- Added custom MLP node (rectangle with internal neuron dots, resizable)
+- New icon for MLP: src/assets/icons/MLPIcon.tsx
+- Files:
+  - src/nodes/MLPNode.tsx (rows×cols small dots rendered in SVG)
+  - src/diagram/DiagramCanvas.tsx (registered as mlpNode)
+  - src/components/Sidebar.tsx (MLP Layers now uses mlpNode + MLPIcon)
+
+
+## Update: Dropout Node Visualization
+- Added custom Dropout node (rectangle with random dots and diagonal slashes pattern)
+- Files:
+  - src/nodes/DropoutNode.tsx
+  - src/diagram/DiagramCanvas.tsx (registered as dropoutNode)
+  - src/components/Sidebar.tsx (Dropout now uses dropoutNode)
+
+
+## Update: P4.1 (F_DETAIL) — Sidebar Recursive Rendering
+- Refactored src/components/Sidebar.tsx to render multi-level menu recursively with collapsible sections
+- Added Section component handling nested categories (children) and items
+
+
+
+### 自监督追踪（P3/P5）
+- [ ] P3.2（待定义）
+- [ ] P3.3（待定义）
+- [ ] P5.1（待定义）
+## Update: P5.1 (F_TEMPLATE)
+
+## Visual & Naming Spec (Draft)
+- Central tokens: `src/ui/tokens.ts`; Tailwind theme extended with `semantic.*` colors.
+- Node role → default color mapping documented in `docs/ui-spec.md`.
+- Naming: PascalCase node components; `data.typeLabel` shows family; keep KaTeX/MathText.
+- SVG-first: prefer inline SVG for visuals; current nodes partially use CSS borders — will migrate gradually.
+- Added a templates data module with 3 presets (nodes/edges JSON):
+  - Basic CNN Block, Basic RNN Cell, Attention Mechanism
+- File: `src/data/templates.ts`
+- Sidebar integration: added a Templates category with clickable items to insert templates — `src/components/Sidebar.tsx`
+ - Drag/Click load: clicking a template inserts it centered in the viewport; dragging drops it at cursor point. Inserted nodes are pre-selected for immediate move/edit.
+   - Handlers: `src/diagram/DiagramCanvas.tsx` listens to `mlcd-insert-template` event and performs centered insertion.

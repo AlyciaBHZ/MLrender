@@ -1,0 +1,88 @@
+{
+  "tokens": {
+    "colors": {
+      "canvas": "var(--mlcd-canvas)",
+      "stroke": "var(--mlcd-stroke)",
+      "label": "var(--mlcd-label)",
+      "linear": "var(--mlcd-linear)",
+      "linearAlt": "var(--mlcd-linear-alt)",
+      "activationG": "var(--mlcd-activation-g)",
+      "activationO": "var(--mlcd-activation-o)",
+      "data": "var(--mlcd-data)",
+      "dataNeutral": "var(--mlcd-data-neutral)",
+      "aux": "var(--mlcd-aux)",
+      "loss": "var(--mlcd-loss)",
+      "optimizer": "var(--mlcd-optimizer)"
+    },
+    "strokeWidth": { "base": 1.25, "active": 1.5 },
+    "radius": { "sm": 6, "md": 8, "lg": 10, "pill": 9999 }
+  },
+  "components": {
+    "FCLayer": {
+      "role": "core",
+      "shape": "capsule",
+      "ports": { "in": ["left:mid"], "out": ["right:mid"] },
+      "label": true,
+      "fill": "linear",
+      "stroke": "stroke"
+    },
+    "MLPLayers": {
+      "role": "core",
+      "shape": "rounded-rect",
+      "decoration": "dot-grid",
+      "ports": { "in": ["left:mid"], "out": ["right:mid"] },
+      "fill": "linearAlt"
+    },
+    "ConvLayer": {
+      "role": "core",
+      "shape": "stacked-panels",
+      "depth": 2,
+      "channels": "stripes",
+      "ports": { "in": ["left:mid"], "out": ["right:mid"] },
+      "fill": ["linear","linearAlt"]
+    },
+    "Neuron": {
+      "role": "core",
+      "shape": "circle",
+      "ports": { "in": ["left:mid"], "out": ["right:mid"] },
+      "fill": "linear"
+    },
+    "ActivationSigmoid": {
+      "role": "func",
+      "shape": "circle",
+      "curve": "sigmoid",
+      "fill": "activationG"
+    },
+    "ActivationTanh": {
+      "role": "func",
+      "shape": "circle",
+      "curve": "tanh",
+      "fill": "activationO"
+    },
+    "Dropout": {
+      "role": "func",
+      "shape": "rounded-rect",
+      "stroke": { "style": "dashed" },
+      "pattern": "sparse-dots-or-slash",
+      "fill": "none",
+      "accent": "aux"
+    },
+    "Tensor": {
+      "role": "data",
+      "shape": "stacked-cubes",
+      "layers": 3,
+      "fill": ["data","dataNeutral","dataNeutral"]
+    },
+    "GroupNode": {
+      "role": "group",
+      "shape": "dashed-container",
+      "labelBar": { "height": 28, "fill": "linearAlt" }
+    },
+    "LossOptimizer": {
+      "role": "objective",
+      "shape": ["circle","rounded-rect"],
+      "fills": ["loss","optimizer"]
+    }
+  }
+}
+

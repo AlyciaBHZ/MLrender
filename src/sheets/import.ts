@@ -57,12 +57,13 @@ export function buildDiagramFromCsv(nodesCsv: string, edgesCsv: string): { nodes
     const id = r[nh['id']];
     const type = r[nh['type']] || 'boxNode';
     const label = r[nh['label']] || '';
+    const formula = nh['formula'] != null && nh['formula'] >= 0 ? r[nh['formula']] : '';
     const color = r[nh['color']] || undefined;
     const width = r[nh['width']] ? Number(r[nh['width']]) : undefined;
     const height = nh['height'] != null && nh['height'] >= 0 && r[nh['height']] ? Number(r[nh['height']]) : undefined;
     const x = r[nh['x']] ? Number(r[nh['x']]) : 0;
     const y = r[nh['y']] ? Number(r[nh['y']]) : 0;
-    return { id, type, position: { x, y }, data: { label, color, width, height } } as Node;
+    return { id, type, position: { x, y }, data: { label, formulaLabel: formula || undefined, color, width, height } } as Node;
   });
 
   const edges: Edge[] = edgeData.map((r) => {
