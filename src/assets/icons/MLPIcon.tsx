@@ -1,4 +1,4 @@
-import React from 'react';
+// React import not required with JSX transform
 
 export default function MLPIcon({ className }: { className?: string }) {
   return (

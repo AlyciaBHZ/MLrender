@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 declare global {
   interface Window { katex?: any }
@@ -31,4 +31,3 @@ export default function MathText({ text, enabled, className, title }: Props) {
 
   return <span ref={spanRef} className={className} title={title} />;
 }
-

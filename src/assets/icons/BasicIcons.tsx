@@ -22,13 +22,6 @@ export const PoolIcon = ({ className = 'w-5 h-5' }: { className?: string }) => (
   </svg>
 );
 
-export const RNNIcon = ({ className = 'w-5 h-5' }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="4" y="6" width="16" height="12" rx="2" stroke="#a855f7" strokeWidth="2" />
-    <path d="M9 9h6M9 12h6" stroke="#a855f7" strokeWidth="2" />
-    <path d="M15 15c2 0 3-1 3-3s-1-3-3-3" stroke="#a855f7" strokeWidth="2" fill="none" />
-  </svg>
-);
 
 export const OutputIcon = ({ className = 'w-5 h-5' }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

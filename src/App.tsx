@@ -1,16 +1,16 @@
-﻿import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import DiagramCanvas from './diagram/DiagramCanvas';
 import Sidebar from './components/Sidebar';
 import PropertiesPanel from './components/PropertiesPanel';
 import { useDiagramStore } from './diagram/DiagramState';
-import { toPng, toSvg } from 'html-to-image';
+import { toPng } from 'html-to-image';
 import Toolbar from './components/Toolbar';
 import { exportToSheets, importFromSheets } from '@/sheets/index';
-import LangSwitch from '@/components/LangSwitch';
 import QuickPanel from '@/components/QuickPanel';
+import { useTranslation } from 'react-i18next';
 
-// ä¸­æ–‡è¯´æ˜Žï¼šä¸»å¸ƒå±€ç»„ä»¶ï¼Œå·¦ä¾§é¢„ç•™å›¾æ ‡ä¾§è¾¹æ ï¼Œä¸­é—´ä¸ºç”»å¸ƒï¼Œå³ä¾§ä¸ºå±žæ€§é¢æ¿å ä½
 export default function App() {
+  const { t } = useTranslation();
   const setDiagram = useDiagramStore((s) => s.setDiagram);
   const nodes = useDiagramStore((s) => s.nodes);
   const edges = useDiagramStore((s) => s.edges);
@@ -36,20 +36,19 @@ export default function App() {
       const text = await file.text();
       const parsed = JSON.parse(text);
       if (Array.isArray(parsed.nodes) && Array.isArray(parsed.edges)) {
-        // P3: ä½¿ç”¨ Zustand çš„ setNodes / setEdges é‡æ–°æ¸²æŸ“ç”»å¸ƒ
         setNodes(parsed.nodes);
         setEdges(parsed.edges);
       } else {
-        alert('JSON æ ¼å¼æ— æ•ˆï¼šéœ€è¦ { nodes: [], edges: [] }');
+        alert('Invalid JSON: expect { nodes: [], edges: [] }');
       }
     } catch (err) {
-      alert('è§£æžå¤±è´¥ï¼Œè¯·æ£€æŸ¥ JSON æ–‡ä»¶');
+      alert('Failed to parse JSON file');
     } finally {
       e.target.value = '';
     }
   };
 
-  const EXPORT_PIXEL_RATIO = 3; // HD export per spec (2x/3x)
+  const EXPORT_PIXEL_RATIO = 3;
   const onExportPNG = async () => {
     const el = document.getElementById('diagram-canvas');
     if (!el) return;
@@ -63,18 +62,7 @@ export default function App() {
     a.download = 'mlcd-canvas.png';
     a.click();
   };
-  const onExportSVG = async () => {
-    const el = document.getElementById('diagram-canvas');
-    if (!el) return;
-    const svg = await toSvg(el, { cacheBust: true, backgroundColor: '#ffffff' });
-    const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'mlcd-canvas.svg';
-    a.click();
-    URL.revokeObjectURL(url);
-  };
+  // SVG export is currently not exposed in UI
 
   const onExportSheets = () => exportToSheets(nodes, edges, true);
 
@@ -86,18 +74,18 @@ export default function App() {
     try {
       const result = await importFromSheets(files);
       if (!result) {
-        alert('è¯·åŒæ—¶é€‰æ‹©åŒ…å«èŠ‚ç‚¹ä¸Žè¿žçº¿çš„ CSVï¼ˆnodes.csv å’Œ edges.csvï¼‰');
+        alert('Expect two CSV files: nodes.csv and edges.csv');
         return;
       }
       setDiagram(result);
     } catch (err) {
-      alert('å¯¼å…¥å¤±è´¥ï¼Œè¯·æ£€æŸ¥ CSV æ ¼å¼');
+      alert('Failed to import from CSV');
     } finally {
       e.target.value = '';
     }
   };
 
-  // æœ¬åœ°è‡ªåŠ¨ä¿å­˜ï¼ˆlocalStorageï¼Œé˜²æŠ–ï¼‰
+  // autosave to localStorage
   useEffect(() => {
     const h = setTimeout(() => {
       const data = { nodes, edges };
@@ -108,7 +96,7 @@ export default function App() {
     return () => clearTimeout(h);
   }, [nodes, edges]);
 
-  // åˆå§‹åŠ è½½ï¼ˆå¦‚å­˜åœ¨æœ¬åœ°ç¼“å­˜ï¼‰
+  // load from localStorage on mount
   useEffect(() => {
     try {
       const text = localStorage.getItem('mlcd-diagram');
@@ -119,15 +107,14 @@ export default function App() {
         }
       }
     } catch {}
-    // ä»…é¦–æ¬¡æ‰§è¡Œ
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // é”®ç›˜å¿«æ·é”®
+  // keyboard shortcuts
   const removeSelected = useDiagramStore((s) => s.removeSelected);
   const duplicateSelected = useDiagramStore((s) => s.duplicateSelected);
-  const setSnapToGrid = useDiagramStore((s) => s.setSnapToGrid);
   const snapToGrid = useDiagramStore((s) => s.snapToGrid);
+  const setSnapToGrid = useDiagramStore((s) => s.setSnapToGrid);
   const snapGrid = useDiagramStore((s) => s.snapGrid);
   const setSnapGrid = useDiagramStore((s) => s.setSnapGrid);
 
@@ -142,36 +129,29 @@ export default function App() {
         }
         return;
       }
-      // åˆ é™¤
       if (e.key === 'Delete' || e.key === 'Backspace') {
         removeSelected();
       }
-      // å¤åˆ¶
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'd') {
         e.preventDefault();
         duplicateSelected();
       }
-      // ä¿å­˜
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
         e.preventDefault();
         onSaveJSON();
       }
-      // åŠ è½½
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'o') {
         e.preventDefault();
         onLoadJSONClick();
       }
-      // å¯¼å‡º PNG
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'e') {
         e.preventDefault();
         onExportPNG();
       }
-      // æ‹Ÿåˆè§†å›¾
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
         e.preventDefault();
         window.dispatchEvent(new Event('mlcd-fit-view'));
       }
-      // åˆ‡æ¢å¸é™„
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'g') {
         e.preventDefault();
         setSnapToGrid(!snapToGrid);
@@ -183,19 +163,16 @@ export default function App() {
 
   return (
     <div className="h-screen w-screen grid grid-cols-[260px_1fr_300px] grid-rows-[auto_1fr]">
-      {/* é¡¶éƒ¨æ ï¼šå·¦-æ ‡é¢˜ï¼Œä¸­-ç¼–è¾‘å·¥å…·ï¼Œå³-æ•°æ®æŒ‰é’® */}
       <header className="col-span-3 h-12 px-4 grid grid-cols-[auto_1fr_auto] items-center border-b bg-white gap-4">
-        <h1 className="text-sm font-semibold text-gray-800">ML Concept Designer Â· MVP</h1>
+        <h1 className="text-sm font-semibold text-gray-800">ML Concept Designer MVP</h1>
 
-        {/* ä¸­é—´ï¼šç¼–è¾‘å·¥å…· */}
         <div className="flex items-center gap-3 justify-center">
           <Toolbar />
-          {/* Snap æŽ§ä»¶ */}
           <label className="flex items-center gap-1 text-xs text-gray-700">
-            <input type="checkbox" checked={snapToGrid} onChange={(e) => setSnapToGrid(e.target.checked)} /> Snap
+            <input type="checkbox" checked={snapToGrid} onChange={(e) => setSnapToGrid(e.target.checked)} /> {t('toolbar.snap')}
           </label>
           <label className="flex items-center gap-1 text-xs text-gray-700">
-            Grid
+            {t('toolbar.grid')}
             <input
               className="w-14 rounded border px-1 py-0.5"
               type="number"
@@ -213,41 +190,46 @@ export default function App() {
             className="text-xs px-2 py-1 rounded border hover:bg-gray-50"
             onClick={() => window.dispatchEvent(new Event('mlcd-fit-view'))}
           >
-            é€‚é…è§†å›¾
+            {t('toolbar.fit')}
           </button>
           <button
             className="text-xs px-2 py-1 rounded border hover:bg-gray-50"
             onClick={() => window.dispatchEvent(new Event('mlcd-center'))}
           >
-            é‡ç½®ä¸­å¿ƒ
+            {t('toolbar.center')}
           </button>
         </div>
 
-        {/* å³ä¾§ï¼šæ•°æ®æŒä¹…åŒ–æŒ‰é’® */}
         <div className="flex items-center gap-2 justify-end">
-          <button className="text-xs px-2 py-1 rounded border hover:bg-gray-50" onClick={onSaveJSON} aria-label="ä¿å­˜ JSON">ä¿å­˜ JSON</button>
-          <button className="text-xs px-2 py-1 rounded border hover:bg-gray-50" onClick={onLoadJSONClick} aria-label="åŠ è½½ JSON">åŠ è½½ JSON</button>
-          <button className="text-xs px-2 py-1 rounded border hover:bg-gray-50" onClick={onExportPNG} aria-label="å¯¼å‡º PNG">å¯¼å‡º PNG</button>
-          <button className="text-xs px-2 py-1 rounded border hover:bg-gray-50" onClick={onExportSheets} aria-label="å¯¼å‡ºè¡¨æ ¼">å¯¼å‡ºè¡¨æ ¼</button>
-          <button className="text-xs px-2 py-1 rounded border hover:bg-gray-50" onClick={onImportSheetsClick} aria-label="å¯¼å…¥è¡¨æ ¼">å¯¼å…¥è¡¨æ ¼</button>
+          <button className="text-xs px-3 py-1.5 rounded bg-blue-600 text-white hover:bg-blue-700" onClick={onExportPNG} aria-label={t('app.exportPng')}>
+            {t('app.exportPng')}
+          </button>
+          <button className="text-xs px-2 py-1 rounded border hover:bg-gray-50" onClick={onExportSheets} aria-label={t('app.exportSheets')}>
+            {t('app.exportSheets')}
+          </button>
+          <span className="w-px h-4 bg-gray-300 mx-1" />
+          <button className="text-xs px-2 py-1 rounded border hover:bg-gray-50" onClick={onSaveJSON} aria-label={t('app.saveJson')}>
+            {t('app.saveJson')}
+          </button>
+          <button className="text-xs px-2 py-1 rounded border hover:bg-gray-50" onClick={onLoadJSONClick} aria-label={t('app.loadJson')}>
+            {t('app.loadJson')}
+          </button>
+          <button className="text-xs px-2 py-1 rounded border hover:bg-gray-50" onClick={onImportSheetsClick} aria-label={t('app.importSheets')}>
+            {t('app.importSheets')}
+          </button>
           <input ref={fileInputRef} type="file" accept="application/json" className="hidden" onChange={onFileChange} />
           <input ref={csvInputRef} type="file" accept=".csv" multiple className="hidden" onChange={onImportSheets} />
         </div>
       </header>
 
-      {/* å·¦ä¾§å›¾æ ‡é¢æ¿ */}
       <Sidebar />
 
-      {/* ä¸­é—´ç”»å¸ƒ */}
       <main className="relative bg-mlcd-canvas">
         <DiagramCanvas />
-        <LangSwitch />
         <QuickPanel />
       </main>
 
-      {/* å³ä¾§å±žæ€§é¢æ¿ */}
       <PropertiesPanel />
     </div>
   );
 }
-

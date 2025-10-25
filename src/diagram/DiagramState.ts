@@ -1,5 +1,4 @@
-import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+﻿import { create } from 'zustand';
 import {
   type Edge,
   type Node,
@@ -10,15 +9,16 @@ import {
   applyEdgeChanges,
   MarkerType,
 } from 'reactflow';
+import { buildGroupFromSelection, moveSelectionIntoGroup, ungroupSelectedNodes } from './grouping';
 
-// 中文说明：集中管理图表状态（节点与连线），方便后续扩展保存/加载/撤销等
+// ä¸­æ–‡è¯´æ˜Žï¼šé›†ä¸­ç®¡ç†å›¾è¡¨çŠ¶æ€ï¼ˆèŠ‚ç‚¹ä¸Žè¿žçº¿ï¼‰ï¼Œæ–¹ä¾¿åŽç»­æ‰©å±•ä¿å­˜/åŠ è½½/æ’¤é”€ç­‰
 export type DiagramState = {
   nodes: Node[];
   edges: Edge[];
   historyPast: { nodes: Node[]; edges: Edge[] }[];
   historyFuture: { nodes: Node[]; edges: Edge[] }[];
   isUndoRedo: boolean;
-  // UI 设置
+  // UI è®¾ç½®
   snapToGrid: boolean;
   snapGrid: [number, number];
   onNodesChange: OnNodesChange;
@@ -51,8 +51,8 @@ function snapshot(state: Pick<DiagramState, 'nodes' | 'edges'>) {
   } as { nodes: Node[]; edges: Edge[] };
 }
 
-export const useDiagramStore = create<DiagramState>(devtools((set, get) => ({
-  // 初始为空图
+export const useDiagramStore = create<DiagramState>()((set, get) => ({
+  // åˆå§‹ä¸ºç©ºå›¾
   nodes: [],
   edges: [],
   historyPast: [],
@@ -61,7 +61,7 @@ export const useDiagramStore = create<DiagramState>(devtools((set, get) => ({
   snapToGrid: true,
   snapGrid: [8, 8],
 
-  // 处理节点变更（移动、选中、尺寸等）
+  // å¤„ç†èŠ‚ç‚¹å˜æ›´ï¼ˆç§»åŠ¨ã€é€‰ä¸­ã€å°ºå¯¸ç­‰ï¼‰
   onNodesChange: (changes) => {
     const { nodes, edges, isUndoRedo, historyPast } = get();
     const nextNodes = applyNodeChanges(changes, nodes);
@@ -72,7 +72,7 @@ export const useDiagramStore = create<DiagramState>(devtools((set, get) => ({
     set({ nodes: nextNodes, isUndoRedo: false });
   },
 
-  // 处理连线变更
+  // å¤„ç†è¿žçº¿å˜æ›´
   onEdgesChange: (changes) => {
     const { nodes, edges, isUndoRedo, historyPast } = get();
     const nextEdges = applyEdgeChanges(changes, edges);
@@ -83,7 +83,7 @@ export const useDiagramStore = create<DiagramState>(devtools((set, get) => ({
     set({ edges: nextEdges, isUndoRedo: false });
   },
 
-  // 连接两个节点时触发，生成新的 edge
+  // è¿žæŽ¥ä¸¤ä¸ªèŠ‚ç‚¹æ—¶è§¦å‘ï¼Œç”Ÿæˆæ–°çš„ edge
   onConnect: (connection) => {
     const { nodes, edges, historyPast } = get();
     const past = [...historyPast, snapshot({ nodes, edges })].slice(-MAX_HISTORY);
@@ -108,14 +108,14 @@ export const useDiagramStore = create<DiagramState>(devtools((set, get) => ({
     });
   },
 
-  // 新增节点（用于拖拽放置）
+  // æ–°å¢žèŠ‚ç‚¹ï¼ˆç”¨äºŽæ‹–æ‹½æ”¾ç½®ï¼‰
   addNode: (node) => {
     const { nodes, edges, historyPast } = get();
     const past = [...historyPast, snapshot({ nodes, edges })].slice(-MAX_HISTORY);
     set({ nodes: [...nodes, node], historyPast: past, historyFuture: [] });
   },
 
-  // 根据 id 更新节点 data（浅合并）
+  // æ ¹æ® id æ›´æ–°èŠ‚ç‚¹ dataï¼ˆæµ…åˆå¹¶ï¼‰
   updateNodeData: (id, data) => {
     const { nodes, edges, historyPast } = get();
     const past = [...historyPast, snapshot({ nodes, edges })].slice(-MAX_HISTORY);
@@ -126,14 +126,14 @@ export const useDiagramStore = create<DiagramState>(devtools((set, get) => ({
     });
   },
 
-  // 载入整张图
+  // è½½å…¥æ•´å¼ å›¾
   setDiagram: ({ nodes, edges }) => {
     const s = get();
     const past = [...s.historyPast, snapshot({ nodes: s.nodes, edges: s.edges })].slice(-MAX_HISTORY);
     set({ nodes, edges, historyPast: past, historyFuture: [] });
   },
 
-  // 更新单条边（样式/数据）
+  // æ›´æ–°å•æ¡è¾¹ï¼ˆæ ·å¼/æ•°æ®ï¼‰
   updateEdge: (id, updater) => {
     const { nodes, edges, historyPast } = get();
     const past = [...historyPast, snapshot({ nodes, edges })].slice(-MAX_HISTORY);
@@ -154,7 +154,7 @@ export const useDiagramStore = create<DiagramState>(devtools((set, get) => ({
   setSnapToGrid: (v) => set({ snapToGrid: v }),
   setSnapGrid: (v) => set({ snapGrid: v }),
 
-  // 删除选中的节点与连线
+  // åˆ é™¤é€‰ä¸­çš„èŠ‚ç‚¹ä¸Žè¿žçº¿
   removeSelected: () => {
     const { nodes, edges, historyPast } = get();
     const selectedIds = new Set(nodes.filter((n) => n.selected).map((n) => n.id));
@@ -164,7 +164,7 @@ export const useDiagramStore = create<DiagramState>(devtools((set, get) => ({
     set({ nodes: nextNodes, edges: nextEdges, historyPast: past, historyFuture: [] });
   },
 
-  // 复制选中的节点（简单偏移，不复制边）
+  // å¤åˆ¶é€‰ä¸­çš„èŠ‚ç‚¹ï¼ˆç®€å•åç§»ï¼Œä¸å¤åˆ¶è¾¹ï¼‰
   duplicateSelected: () => {
     const { nodes, edges, historyPast } = get();
     const selected = nodes.filter((n) => n.selected);
@@ -183,88 +183,19 @@ export const useDiagramStore = create<DiagramState>(devtools((set, get) => ({
   // Group selected nodes into a new dashed rectangle group node.
   groupSelectedIntoNewGroup: (label = 'Group') => {
     const { nodes, edges, historyPast } = get();
-    const selected = nodes.filter((n) => n.selected && n.type !== 'groupNode');
-    if (selected.length < 1) return;
-    const byId: Record<string, Node> = Object.fromEntries(nodes.map((n) => [n.id, n]));
-
-    const getAbsPos = (n: Node): { x: number; y: number } => {
-      let x = n.position.x;
-      let y = n.position.y;
-      let cur: Node | undefined = n;
-      while (cur && (cur as any).parentNode) {
-        const p = byId[(cur as any).parentNode as string];
-        if (!p) break;
-        x += p.position.x;
-        y += p.position.y;
-        cur = p;
-      }
-      return { x, y };
-    };
-
-    const fallbackW = 140;
-    const fallbackH = 80;
-    const xs = selected.map((n) => getAbsPos(n).x);
-    const ys = selected.map((n) => getAbsPos(n).y);
-    const ws = selected.map((n) => n.width ?? fallbackW);
-    const hs = selected.map((n) => n.height ?? fallbackH);
-
-    const minX = Math.min(...xs);
-    const minY = Math.min(...ys);
-    const maxX = Math.max(...xs.map((x, i) => x + ws[i]));
-    const maxY = Math.max(...ys.map((y, i) => y + hs[i]));
-    const padding = 24;
-    const groupPos = { x: minX - padding, y: minY - padding };
-    const groupSize = { w: (maxX - minX) + padding * 2, h: (maxY - minY) + padding * 2 };
-
-    const id = `g_${Date.now()}_${Math.round(Math.random() * 1e5)}`;
-    const groupNode: Node = {
-      id,
-      type: 'groupNode' as any,
-      position: groupPos,
-      data: { label } as any,
-      style: { width: groupSize.w, height: groupSize.h },
-      selected: true,
-    } as Node;
-
-    const nextNodes = nodes.map((n) => {
-      if (!n.selected || n.type === 'groupNode') return n;
-      const abs = getAbsPos(n);
-      const rel = { x: abs.x - groupPos.x, y: abs.y - groupPos.y };
-      return { ...n, parentNode: id as any, position: rel, extent: 'parent' as any, selected: false };
-    });
-
+    const res = buildGroupFromSelection(nodes, label, 24);
+    if (!res) return;
     const past = [...historyPast, snapshot({ nodes, edges })].slice(-MAX_HISTORY);
-    set({ nodes: [...nextNodes, groupNode], historyPast: past, historyFuture: [] });
+    set({ nodes: res.nodes, historyPast: past, historyFuture: [] });
+    try {
+      window.dispatchEvent(new CustomEvent('mlcd-group-created', { detail: { groupId: res.groupId, count: nodes.filter((n) => n.selected && n.type !== 'groupNode').length } }));
+    } catch {}
   },
 
   // Move currently selected nodes into an existing group node.
   groupSelectedInto: (groupId: string) => {
     const { nodes, edges, historyPast } = get();
-    const group = nodes.find((n) => n.id === groupId && n.type === 'groupNode');
-    if (!group) return;
-    const byId: Record<string, Node> = Object.fromEntries(nodes.map((n) => [n.id, n]));
-
-    const getAbsPos = (n: Node): { x: number; y: number } => {
-      let x = n.position.x;
-      let y = n.position.y;
-      let cur: Node | undefined = n;
-      while (cur && (cur as any).parentNode) {
-        const p = byId[(cur as any).parentNode as string];
-        if (!p) break;
-        x += p.position.x;
-        y += p.position.y;
-        cur = p;
-      }
-      return { x, y };
-    };
-
-    const gAbs = getAbsPos(group);
-    const nextNodes = nodes.map((n) => {
-      if (!n.selected || n.type === 'groupNode') return n;
-      const abs = getAbsPos(n);
-      const rel = { x: abs.x - gAbs.x, y: abs.y - gAbs.y };
-      return { ...n, parentNode: group.id as any, position: rel, extent: 'parent' as any };
-    });
+    const nextNodes = moveSelectionIntoGroup(nodes, groupId);
     const past = [...historyPast, snapshot({ nodes, edges })].slice(-MAX_HISTORY);
     set({ nodes: nextNodes, historyPast: past, historyFuture: [] });
   },
@@ -272,31 +203,12 @@ export const useDiagramStore = create<DiagramState>(devtools((set, get) => ({
   // Ungroup: lift selected nodes out of their parent group to root coordinates.
   ungroupSelected: () => {
     const { nodes, edges, historyPast } = get();
-    const byId: Record<string, Node> = Object.fromEntries(nodes.map((n) => [n.id, n]));
-    const getAbsPos = (n: Node): { x: number; y: number } => {
-      let x = n.position.x;
-      let y = n.position.y;
-      let cur: Node | undefined = n;
-      while (cur && (cur as any).parentNode) {
-        const p = byId[(cur as any).parentNode as string];
-        if (!p) break;
-        x += p.position.x;
-        y += p.position.y;
-        cur = p;
-      }
-      return { x, y };
-    };
-    const nextNodes = nodes.map((n) => {
-      if (!n.selected || !(n as any).parentNode) return n;
-      const abs = getAbsPos(n);
-      const { parentNode, extent, ...rest } = n as any;
-      return { ...rest, position: abs } as Node;
-    });
+    const nextNodes = ungroupSelectedNodes(nodes);
     const past = [...historyPast, snapshot({ nodes, edges })].slice(-MAX_HISTORY);
     set({ nodes: nextNodes, historyPast: past, historyFuture: [] });
   },
 
-  // 重置图表
+  // é‡ç½®å›¾è¡¨
   reset: () => {
     const { nodes, edges, historyPast } = get();
     const past = [...historyPast, snapshot({ nodes, edges })].slice(-MAX_HISTORY);
@@ -318,4 +230,6 @@ export const useDiagramStore = create<DiagramState>(devtools((set, get) => ({
     const past = [...historyPast, snapshot({ nodes, edges })].slice(-MAX_HISTORY);
     set({ nodes: next.nodes, edges: next.edges, historyPast: past, historyFuture: future, isUndoRedo: true });
   },
-}), { name: 'diagram-store' }));
+}));
+
+

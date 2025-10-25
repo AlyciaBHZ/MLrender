@@ -1,4 +1,4 @@
-import React from 'react';
+// React import not required with JSX transform
 
 export default function NeuronIcon({ className }: { className?: string }) {
   return (
@@ -7,5 +7,4 @@ export default function NeuronIcon({ className }: { className?: string }) {
     </svg>
   );
 }
-
 

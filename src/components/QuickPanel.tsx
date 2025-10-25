@@ -1,7 +1,9 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { useDiagramStore } from '@/diagram/DiagramState';
+import { useTranslation } from 'react-i18next';
 
 export default function QuickPanel() {
+  const { t } = useTranslation();
   const nodes = useDiagramStore((s) => s.nodes);
   const edges = useDiagramStore((s) => s.edges);
   const updateNodeData = useDiagramStore((s) => s.updateNodeData);
@@ -16,9 +18,9 @@ export default function QuickPanel() {
     <div className="absolute bottom-4 right-4 bg-white/95 backdrop-blur rounded shadow border p-3 text-xs space-y-3 z-50">
       {selectedNode && (
         <div className="space-y-2">
-          <div className="font-medium text-gray-700">Node Size & Math</div>
+          <div className="font-medium text-gray-700">{t('quick.nodeTitle', { defaultValue: 'Node Size & Math' })}</div>
           <div>
-            <label className="block text-[11px] text-gray-500 mb-1">Height: {(selectedNode.data as any)?.height ?? 64}px</label>
+            <label className="block text-[11px] text-gray-500 mb-1">{t('quick.height', { defaultValue: 'Height' })}: {(selectedNode.data as any)?.height ?? 64}px</label>
             <input
               type="range"
               min={48}
@@ -34,16 +36,16 @@ export default function QuickPanel() {
               checked={Boolean((selectedNode.data as any)?.useLatex)}
               onChange={(e) => updateNodeData(selectedNode.id, { useLatex: e.target.checked })}
             />
-            <span>LaTeX（公式）</span>
+            <span>{t('quick.latex', { defaultValue: 'Render LaTeX formula' })}</span>
           </label>
         </div>
       )}
 
       {selectedEdge && (
         <div className="space-y-2">
-          <div className="font-medium text-gray-700">Edge Style</div>
+          <div className="font-medium text-gray-700">{t('quick.edgeTitle', { defaultValue: 'Edge Style' })}</div>
           <div>
-            <label className="block text-[11px] text-gray-500 mb-1">Stroke width</label>
+            <label className="block text-[11px] text-gray-500 mb-1">{t('quick.strokeWidth', { defaultValue: 'Stroke width' })}</label>
             <input
               className="w-24 rounded border px-2 py-0.5"
               type="number"
@@ -58,12 +60,12 @@ export default function QuickPanel() {
             />
           </div>
           <div>
-            <label className="block text-[11px] text-gray-500 mb-1">Edge label</label>
+            <label className="block text-[11px] text-gray-500 mb-1">{t('edge.label')}</label>
             <input
               className="w-40 rounded border px-2 py-0.5"
               value={String(selectedEdge.label ?? '')}
               onChange={(e) => updateEdge(selectedEdge.id, (edge) => ({ ...edge, label: e.target.value } as any))}
-              placeholder="e.g., logits"
+              placeholder={t('edge.labelPlaceholder', { defaultValue: 'e.g., logits' })}
             />
           </div>
         </div>
@@ -71,4 +73,3 @@ export default function QuickPanel() {
     </div>
   );
 }
-

@@ -1,4 +1,4 @@
-import type { Node } from 'reactflow';
+﻿import type { Node } from 'reactflow';
 import { useDiagramStore } from './DiagramState';
 
 type Bounds = { x: number; y: number; w: number; h: number };
@@ -12,7 +12,7 @@ export function getAbsolutePosition(n: Node, byId: Record<string, Node>): { x: n
   let y = n.position.y;
   let cur: Node | undefined = n;
   while (cur && (cur as any).parentNode) {
-    const p = byId[(cur as any).parentNode as string];
+    const p: Node | undefined = byId[(cur as any).parentNode as string];
     if (!p) break;
     x += p.position.x;
     y += p.position.y;
@@ -39,23 +39,30 @@ export function getSelectedBounds(padding = 24): Bounds | null {
   return { x: minX - padding, y: minY - padding, w: (maxX - minX) + padding * 2, h: (maxY - minY) + padding * 2 };
 }
 
-// Create a new groupNode enclosing all currently selected nodes
-export function createGroupNodeFromSelection(label = 'Group', padding = 24): string | null {
-  const { nodes, setNodes } = useDiagramStore.getState();
+// Pure helpers to compute grouping mutations (no side effects)
+export function buildGroupFromSelection(nodes: Node[], label = 'Group', padding = 24): { nodes: Node[]; groupId: string } | null {
   const selected = nodes.filter((n) => n.selected && n.type !== 'groupNode');
   if (!selected.length) return null;
   const byId = buildIndex(nodes);
-  const bounds = getSelectedBounds(padding);
-  if (!bounds) return null;
-  const id = `g_${Date.now()}_${Math.round(Math.random() * 1e5)}`;
+  const fallbackW = 140;
+  const fallbackH = 80;
+  const xs = selected.map((n) => getAbsolutePosition(n, byId).x);
+  const ys = selected.map((n) => getAbsolutePosition(n, byId).y);
+  const ws = selected.map((n) => n.width ?? fallbackW);
+  const hs = selected.map((n) => n.height ?? fallbackH);
+  const minX = Math.min(...xs);
+  const minY = Math.min(...ys);
+  const maxX = Math.max(...xs.map((x, i) => x + ws[i]));
+  const maxY = Math.max(...ys.map((y, i) => y + hs[i]));
+  const bounds: Bounds = { x: minX - padding, y: minY - padding, w: (maxX - minX) + padding * 2, h: (maxY - minY) + padding * 2 };
 
-  const nextNodes: Node[] = nodes.map((n) => {
+  const id = `g_${Date.now()}_${Math.round(Math.random() * 1e5)}`;
+  const nextChildren: Node[] = nodes.map((n) => {
     if (!n.selected || n.type === 'groupNode') return n;
     const abs = getAbsolutePosition(n, byId);
     const rel = { x: abs.x - bounds.x, y: abs.y - bounds.y };
     return { ...n, parentNode: id as any, position: rel, extent: 'parent' as any, selected: false };
   });
-
   const groupNode: Node = {
     id,
     type: 'groupNode' as any,
@@ -64,8 +71,39 @@ export function createGroupNodeFromSelection(label = 'Group', padding = 24): str
     style: { width: bounds.w, height: bounds.h },
     selected: true,
   } as Node;
+  const next = [groupNode, ...nextChildren];
+  return { nodes: next, groupId: id };
+}
 
-  setNodes([...nextNodes, groupNode]);
-  return id;
+export function moveSelectionIntoGroup(nodes: Node[], groupId: string): Node[] {
+  const group = nodes.find((n) => n.id === groupId && n.type === 'groupNode');
+  if (!group) return nodes;
+  const byId = buildIndex(nodes);
+  const gAbs = getAbsolutePosition(group, byId);
+  return nodes.map((n) => {
+    if (!n.selected || n.type === 'groupNode') return n;
+    const abs = getAbsolutePosition(n, byId);
+    const rel = { x: abs.x - gAbs.x, y: abs.y - gAbs.y };
+    return { ...n, parentNode: group.id as any, position: rel, extent: 'parent' as any };
+  });
+}
+
+export function ungroupSelectedNodes(nodes: Node[]): Node[] {
+  const byId = buildIndex(nodes);
+  return nodes.map((n) => {
+    if (!n.selected || !(n as any).parentNode) return n;
+    const abs = getAbsolutePosition(n, byId);
+    const { parentNode, extent, ...rest } = n as any;
+    return { ...rest, position: abs } as Node;
+  });
+}
+
+// Backward compatible helper that mutates state (used by older code paths)
+export function createGroupNodeFromSelection(label = 'Group', padding = 24): string | null {
+  const { nodes, setNodes } = useDiagramStore.getState();
+  const res = buildGroupFromSelection(nodes, label, padding);
+  if (!res) return null;
+  setNodes(res.nodes);
+  return res.groupId;
 }
 

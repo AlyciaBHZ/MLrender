@@ -8,7 +8,6 @@ import {
   EmbeddingIcon,
   AttentionIcon,
   PoolIcon,
-  RNNIcon,
   LossIcon,
   InputDataIcon,
 } from '@/assets/icons/BasicIcons';
@@ -23,7 +22,6 @@ export type MarkerVariant =
   | 'embedding'
   | 'attention'
   | 'pool'
-  | 'rnn'
   | 'loss'
   | 'input';
 
@@ -36,7 +34,6 @@ const map: Record<MarkerVariant, React.ComponentType<{ className?: string }>> = 
   embedding: EmbeddingIcon,
   attention: AttentionIcon,
   pool: PoolIcon,
-  rnn: RNNIcon,
   loss: LossIcon,
   input: InputDataIcon,
 };
@@ -50,4 +47,3 @@ export default function NodeMarker({ variant }: { variant?: string }) {
     </div>
   );
 }
-

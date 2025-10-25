@@ -18,11 +18,17 @@ i18n
 export function useI18n() {
   const { t, i18n: instance } = useTranslation();
   return {
-    t,
+    t: (key: any, opts?: any) => {
+      const k = String(key);
+      // Enforce: zh locale uses English names for components (node.*)
+      if ((instance.language === 'zh') && k.startsWith('node.')) {
+        return instance.t(k, { ...(opts || {}), lng: 'en' });
+      }
+      return t(k as any, opts as any);
+    },
     lang: instance.language,
     setLang: (lng: string) => instance.changeLanguage(lng),
   };
 }
 
 export default i18n;
-

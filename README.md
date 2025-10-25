@@ -320,3 +320,56 @@
 - Sidebar integration: added a Templates category with clickable items to insert templates — `src/components/Sidebar.tsx`
  - Drag/Click load: clicking a template inserts it centered in the viewport; dragging drops it at cursor point. Inserted nodes are pre-selected for immediate move/edit.
    - Handlers: `src/diagram/DiagramCanvas.tsx` listens to `mlcd-insert-template` event and performs centered insertion.
+
+## Update: P7.0 (P2.1) — Sidebar Scroll Lock
+- Fixed sidebar overflow causing page scroll. Sidebar now scrolls independently while canvas stays fixed.
+- Changes:
+  - `src/components/Sidebar.tsx`: root container set to `h-full min-h-0 overflow-y-auto overscroll-contain` (grid-friendly scroll).
+
+## Update: P7.0 (P1.2) — Lasso Selection
+- Enabled box selection on drag (lasso) with partial inclusion mode; disabled panning on left-drag
+- Changes: `src/diagram/DiagramCanvas.tsx` → `selectionOnDrag={true}`, `selectionMode=SelectionMode.Partial`, `panOnDrag={false}`
+
+## Update: P7.0 (P1.1) — Sidebar Architecture Refactor
+- Implemented strict three-level catalog for Sidebar per final UI spec
+  - New single source of truth: `src/data/sidebarData.ts`
+  - Sidebar renders from catalog (no hardcoded/duplicated lists)
+  - Only minimal primitives + Templates present (loop structures like RNN/LSTM removed from primitives)
+- I18N
+  - Category titles localized via keys: `sidebar.<id>.title`
+  - Technical item labels (FC Layer, BatchNorm, ReLU, etc.) remain English in zh locale
+- Files:
+  - src/data/sidebarData.ts (NEW)
+  - src/components/Sidebar.tsx (refactored to consume catalog)
+  - src/i18n/locales/zh/translation.json (added sidebar.* titles)
+
+## Update: P7.0 (P1.1/P3.1) — Toolbar Simplification & Alignment Fixes
+- Consolidated alignment/distribution actions into a dropdown to reduce icon clutter
+- Validated and improved distribution to space by node centers for more natural layouts
+- Changes:
+  - `src/components/AlignmentDropdown.tsx` (NEW): grouped actions UI
+  - `src/components/Toolbar.tsx`: replaced multiple icons with the dropdown, removed secondary clusters
+  - `src/diagram/alignment.ts`: distribute() now uses centers; kept AlignLeft/AlignTop as primary actions
+  - Group/Ungroup controls temporarily hidden until feature integration is verified (prevent crash)
+
+## Update: P7.0 (Hotfix) — Group Selection Crash
+- Fixed parent-child mount order when creating groups (parent first), preventing crash on group action
+- Removed invalid SVG paths from `GroupNode` that could trigger rendering issues
+- Changes:
+  - `src/diagram/DiagramState.ts`: groupSelectedIntoNewGroup now inserts parent before children
+  - `src/diagram/grouping.ts`: setNodes parent-first
+   - `src/nodes/GroupNode.tsx`: removed calc() path decorations; cleaned collapse glyph
+
+## Update: P7.1 (Wave 1 Foundations)
+- Node schemas and schema‑driven PropertiesPanel
+  - `src/ui/nodeSchemas.ts` (NEW): registry for activation/conv/fc/tensor
+  - `src/components/PropertiesPanel.tsx`: renders schema fields and updates node data
+- Canvas toasts
+  - `src/diagram/DiagramState.ts`: emits `mlcd-group-created`
+  - `src/diagram/DiagramCanvas.tsx`: unified toast handling (template + group)
+- Consolidation
+  - `src/diagram/grouping.ts`: single source helpers; parent‑first ordering
+  - `src/diagram/DiagramState.ts`: delegates to helpers
+- Build cleanup
+  - Removed unused React imports, fixed mojibake in ActivationNode, ensured green build
+
