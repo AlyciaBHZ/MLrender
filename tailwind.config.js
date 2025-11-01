@@ -29,7 +29,7 @@ export default {
           900: '#1e3a8a'
         },
         // Semantic colors are driven by CSS variables for theming (HSL).
-        // Use with opacity support: text-semantic-primary/50 → hsl(var(--mlcd-primary)/0.5)
+        // Use with opacity: e.g., text-semantic-primary/50 -> hsl(var(--mlcd-primary)/0.5)
         semantic: {
           primary: 'hsl(var(--mlcd-primary) / <alpha-value>)',
           success: 'hsl(var(--mlcd-success) / <alpha-value>)',
@@ -49,10 +49,13 @@ export default {
           'activation-g': 'hsl(var(--mlcd-activation-g) / <alpha-value>)',
           'activation-o': 'hsl(var(--mlcd-activation-o) / <alpha-value>)',
           data: 'hsl(var(--mlcd-data) / <alpha-value>)',
+          'data-alt': 'hsl(var(--mlcd-data-alt) / <alpha-value>)',
           'data-neutral': 'hsl(var(--mlcd-data-neutral) / <alpha-value>)',
           aux: 'hsl(var(--mlcd-aux) / <alpha-value>)',
           loss: 'hsl(var(--mlcd-loss) / <alpha-value>)',
           optimizer: 'hsl(var(--mlcd-optimizer) / <alpha-value>)',
+          attn: 'hsl(var(--mlcd-attn) / <alpha-value>)',
+          'tensor-alt': 'hsl(var(--mlcd-tensor-alt) / <alpha-value>)',
           selected: 'hsl(var(--mlcd-selected) / <alpha-value>)'
         }
       },

@@ -30,10 +30,13 @@
   --mlcd-activation-g: 150 65% 45%;  /* Activation green */
   --mlcd-activation-o: 30 90% 55%;   /* Activation orange */
   --mlcd-data: 220 70% 45%;          /* Data deep blue */
+  --mlcd-data-alt: 220 52% 58%;      /* Data alt (lighter blue) */
   --mlcd-data-neutral: 220 8% 60%;   /* Data neutral gray */
   --mlcd-aux: 355 80% 55%;           /* Aux red */
   --mlcd-loss: 355 78% 48%;          /* Loss red */
   --mlcd-optimizer: 220 68% 42%;     /* Optimizer deep blue */
+  --mlcd-attn: 348 83% 47%;          /* Attention crimson */
+  --mlcd-tensor-alt: 200 60% 55%;    /* Tensor alt (teal) */
 
   /* State */
   --mlcd-selected: 260 90% 60%;

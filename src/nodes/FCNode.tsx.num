@@ -1,0 +1,131 @@
+   1 import { useMemo } from 'react';
+   2 import { Handle, Position, type NodeProps } from 'reactflow';
+   3 import { hexToRgba } from '@/utils/color';
+   4 import MathText from '@/components/MathText';
+   5 import NodeView from '@/nodes/common/NodeView';
+   6 import { HANDLE_CLASS } from '@/nodes/common/ports';
+   7 
+   8 export type FCNodeData = {
+   9   label?: string;
+  10   color?: string;
+  11   formulaLabel?: string;
+  12   variant?: string;
+  13   inputDim?: number;
+  14   outputDim?: number;
+  15   units?: number;
+  16   bias?: boolean;
+  17 };
+  18 
+  19 export default function FCNode({ data, selected }: NodeProps<FCNodeData>) {
+  20   const label = data?.label ?? 'FC Layer';
+  21   const formulaLabel = data?.formulaLabel;
+  22   const color = data?.color ?? '#4169E1';
+  23   const variant: string | undefined = data?.variant ?? 'fc';
+  24   const inputDim = data?.inputDim;
+  25   const outputDim = data?.outputDim;
+  26   const units = Math.max(1, Math.min(64, Number(data?.units ?? 0))) || undefined;
+  27   const bias = Boolean(data?.bias);
+  28 
+  29   const containerStyle = useMemo(
+  30     () => ({
+  31       borderColor: color,
+  32       backgroundColor: hexToRgba(color, 0.08),
+  33       shadowColor: color,
+  34     }),
+  35     [color]
+  36   );
+  37 
+  38   const handleStyle = useMemo(() => ({ backgroundColor: color }), [color]);
+  39 
+  40   const neuronLines = useMemo(() => {
+  41     const lines = [] as { x: number; key: number }[];
+  42     const lineCount = 7;
+  43     for (let i = 0; i < lineCount; i++) {
+  44       const x = 15 + (70 / (lineCount - 1)) * i;
+  45       lines.push({ x, key: i });
+  46     }
+  47     return lines;
+  48   }, []);
+  49 
+  50   return (
+  51     <NodeView
+  52       label={label}
+  53       color={color}
+  54       selected={selected}
+  55       minWidth={80}
+  56       minHeight={120}
+  57       markerVariant={variant}
+  58       role="core"
+  59       typeAttr="fc"
+  60       containerClassName="rounded-md border-2 bg-white px-4 py-3 min-w-[80px] min-h-[120px] flex flex-col items-center justify-center transition-shadow duration-200"
+  61       style={containerStyle}
+  62       elevation="mid"
+  63     >
+  64       <svg className="absolute inset-2" viewBox="0 0 100 140" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+  65         <defs>
+  66           <linearGradient id={`fcGrad-${color}`} x1="0%" y1="0%" x2="0%" y2="100%">
+  67             <stop offset="0%" style={{ stopColor: color, stopOpacity: 0.15 }} />
+  68             <stop offset="50%" style={{ stopColor: color, stopOpacity: 0.25 }} />
+  69             <stop offset="100%" style={{ stopColor: color, stopOpacity: 0.15 }} />
+  70           </linearGradient>
+  71         </defs>
+  72         {units ? (
+  73           <g fill={color} opacity="0.28">
+  74             {(() => {
+  75               const dots: any[] = [];
+  76               const cols = Math.min(8, Math.max(3, Math.ceil(Math.sqrt(units))));
+  77               const rows = Math.min(8, Math.max(3, Math.ceil(units / cols)));
+  78               const startX = 20, endX = 80, startY = 20, endY = 120;
+  79               const dx = (endX - startX) / Math.max(1, cols - 1);
+  80               const dy = (endY - startY) / Math.max(1, rows - 1);
+  81               let count = 0;
+  82               for (let r = 0; r < rows; r++) {
+  83                 for (let c = 0; c < cols; c++) {
+  84                   if (count++ >= units) break;
+  85                   const cx = startX + dx * c;
+  86                   const cy = startY + dy * r;
+  87                   dots.push(<circle key={`d-${r}-${c}`} cx={cx} cy={cy} r={2.2} />);
+  88                 }
+  89               }
+  90               return dots;
+  91             })()}
+  92           </g>
+  93         ) : (
+  94           <g>
+  95             {neuronLines.map((line) => (
+  96               <line
+  97                 key={line.key}
+  98                 x1={line.x}
+  99                 y1="12"
+ 100                 x2={line.x}
+ 101                 y2="128"
+ 102                 stroke={`url(#fcGrad-${color})`}
+ 103                 strokeWidth="1.8"
+ 104                 strokeLinecap="round"
+ 105               />
+ 106             ))}
+ 107           </g>
+ 108         )}
+ 109       </svg>
+ 110 
+ 111       <div className="relative z-10 text-center space-y-1">
+ 112         {(inputDim || outputDim) && (
+ 113           <div className="text-[10px] font-mono text-gray-400 mb-2">
+ 114             {inputDim && <span>In: {inputDim}</span>}
+ 115             {inputDim && outputDim && <span className="mx-1">→</span>}
+ 116             {outputDim && <span>Out: {outputDim}</span>}
+ 117           </div>
+ 118         )}
+ 119 
+ 120         <div className="text-xs font-semibold text-gray-500 tracking-wide">DENSE{bias ? ' +b' : ''}</div>
+ 121         <div className="text-sm font-medium text-gray-800 break-words px-1" title={label}>
+ 122           {formulaLabel ? <MathText text={formulaLabel} enabled /> : label}
+ 123         </div>
+ 124       </div>
+ 125 
+ 126       <Handle type="target" position={Position.Top} className={HANDLE_CLASS} style={handleStyle} data-port="in" data-slot="0" />
+ 127       <Handle type="source" position={Position.Bottom} className={HANDLE_CLASS} style={handleStyle} data-port="out" data-slot="0" />
+ 128     </NodeView>
+ 129   );
+ 130 }
+ 131 

@@ -1,22 +1,22 @@
-﻿import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import IconButton from '@/ui/atoms/IconButton';
 import AlignmentDropdown from '@/components/AlignmentDropdown';
 import { useDiagramStore } from '@/diagram/DiagramState';
 
 export default function Toolbar() {
-  // keep only needed store actions
   const undo = useDiagramStore((s) => s.undo);
   const redo = useDiagramStore((s) => s.redo);
   const groupSelectedIntoNewGroup = useDiagramStore((s) => s.groupSelectedIntoNewGroup);
   const ungroupSelected = useDiagramStore((s) => s.ungroupSelected);
+  const semanticColorsLocked = useDiagramStore((s) => s.semanticColorsLocked);
+  const setSemanticColorsLocked = useDiagramStore((s) => s.setSemanticColorsLocked);
   const { t, i18n } = useTranslation();
 
   return (
     <div className="flex flex-wrap gap-2 items-center">
       <AlignmentDropdown />
-      <IconButton title={t('toolbar.undo')} onClick={undo}>â†¶</IconButton>
-      <IconButton title={t('toolbar.redo')} onClick={redo}>â†·</IconButton>
-      {/* Secondary inline cluster removed to reduce clutter */}
+      <IconButton title={t('toolbar.undo')} onClick={undo}>{t('toolbar.undo')}</IconButton>
+      <IconButton title={t('toolbar.redo')} onClick={redo}>{t('toolbar.redo')}</IconButton>
       {/* Grouping */}
       <div className="flex items-center gap-1 ml-2">
         <IconButton title={t('toolbar.group')} onClick={() => groupSelectedIntoNewGroup(t('node.group.label'))}>
@@ -33,6 +33,11 @@ export default function Toolbar() {
         </IconButton>
       </div>
       <span className="ml-3" />
+      <label className="text-xs text-gray-600 flex items-center gap-1">
+        <input type="checkbox" checked={semanticColorsLocked} onChange={(e) => setSemanticColorsLocked(e.target.checked)} />
+        Semantic colors
+      </label>
+      <span className="ml-1" />
       <span className="text-xs text-gray-500">{t('toolbar.language')}:</span>
       <select
         className="text-xs px-2 py-1 rounded border hover:bg-gray-50"
@@ -45,4 +50,3 @@ export default function Toolbar() {
     </div>
   );
 }
-

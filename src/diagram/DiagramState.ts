@@ -21,6 +21,7 @@ export type DiagramState = {
   // UI è®¾ç½®
   snapToGrid: boolean;
   snapGrid: [number, number];
+  semanticColorsLocked: boolean;
   onNodesChange: OnNodesChange;
   onEdgesChange: OnEdgesChange;
   onConnect: (connection: Connection) => void;
@@ -32,6 +33,7 @@ export type DiagramState = {
   setEdges: (edges: Edge[]) => void;
   setSnapToGrid: (v: boolean) => void;
   setSnapGrid: (v: [number, number]) => void;
+  setSemanticColorsLocked: (v: boolean) => void;
   removeSelected: () => void;
   duplicateSelected: () => void;
   groupSelectedIntoNewGroup: (label?: string) => void;
@@ -60,6 +62,7 @@ export const useDiagramStore = create<DiagramState>()((set, get) => ({
   isUndoRedo: false,
   snapToGrid: true,
   snapGrid: [8, 8],
+  semanticColorsLocked: true,
 
   // å¤„ç†èŠ‚ç‚¹å˜æ›´ï¼ˆç§»åŠ¨ã€é€‰ä¸­ã€å°ºå¯¸ç­‰ï¼‰
   onNodesChange: (changes) => {
@@ -153,6 +156,7 @@ export const useDiagramStore = create<DiagramState>()((set, get) => ({
 
   setSnapToGrid: (v) => set({ snapToGrid: v }),
   setSnapGrid: (v) => set({ snapGrid: v }),
+  setSemanticColorsLocked: (v) => set({ semanticColorsLocked: v }),
 
   // åˆ é™¤é€‰ä¸­çš„èŠ‚ç‚¹ä¸Žè¿žçº¿
   removeSelected: () => {

@@ -5,6 +5,8 @@ import MathText from '@/components/MathText';
 import { hexToRgba } from '@/utils/color';
 import NodeMarker from '@/components/NodeMarker';
 import { NodeRoleColor } from '@/ui/tokens';
+import { resolveNodeColor } from '@/utils/color';
+import { useDiagramStore } from '@/diagram/DiagramState';
 
 export type ActivationNodeData = {
   label?: string;
@@ -16,9 +18,10 @@ export type ActivationNodeData = {
 };
 
 export default function ActivationNode({ data, selected }: NodeProps<ActivationNodeData>) {
+  const semanticLocked = useDiagramStore((s) => s.semanticColorsLocked);
   const label = data?.label ?? 'ReLU';
   const formulaLabel = data?.formulaLabel;
-  const color = data?.color ?? NodeRoleColor.activation;
+  const color = resolveNodeColor(NodeRoleColor.activation, data, semanticLocked);
   const shape = data?.shape ?? 'diamond';
   const activationType = data?.activationType ?? 'relu';
 
@@ -155,7 +158,6 @@ export default function ActivationNode({ data, selected }: NodeProps<ActivationN
     </div>
   );
 }
-
 
 
 

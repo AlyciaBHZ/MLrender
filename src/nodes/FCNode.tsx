@@ -1,9 +1,10 @@
 import { useMemo } from 'react';
 import { Handle, Position, type NodeProps } from 'reactflow';
-import { hexToRgba } from '@/utils/color';
+import { hexToRgba, resolveNodeColor } from '@/utils/color';
 import MathText from '@/components/MathText';
 import NodeView from '@/nodes/common/NodeView';
 import { HANDLE_CLASS } from '@/nodes/common/ports';
+import { useDiagramStore } from '@/diagram/DiagramState';
 
 export type FCNodeData = {
   label?: string;
@@ -14,12 +15,14 @@ export type FCNodeData = {
   outputDim?: number;
   units?: number;
   bias?: boolean;
+  height?: number;
 };
 
 export default function FCNode({ data, selected }: NodeProps<FCNodeData>) {
+  const semanticLocked = useDiagramStore((s) => s.semanticColorsLocked);
   const label = data?.label ?? 'FC Layer';
   const formulaLabel = data?.formulaLabel;
-  const color = data?.color ?? '#4169E1'; // Royal blue for FC layers
+  const color = resolveNodeColor('#4169E1', data, semanticLocked);
   const variant: string | undefined = data?.variant ?? 'fc';
   const inputDim = data?.inputDim;
   const outputDim = data?.outputDim;
@@ -37,10 +40,9 @@ export default function FCNode({ data, selected }: NodeProps<FCNodeData>) {
 
   const handleStyle = useMemo(() => ({ backgroundColor: color }), [color]);
 
-  // Generate responsive vertical lines (neuron representation)
   const neuronLines = useMemo(() => {
-    const lines = [];
-    const lineCount = 7; // Show 7 vertical lines
+    const lines: { x: number; key: number }[] = [];
+    const lineCount = 7;
     for (let i = 0; i < lineCount; i++) {
       const x = 15 + (70 / (lineCount - 1)) * i;
       lines.push({ x, key: i });
@@ -58,12 +60,11 @@ export default function FCNode({ data, selected }: NodeProps<FCNodeData>) {
       markerVariant={variant}
       role="core"
       typeAttr="fc"
+      typeRibbonLabel="DENSE"
       containerClassName="rounded-md border-2 bg-white px-4 py-3 min-w-[80px] min-h-[120px] flex flex-col items-center justify-center transition-shadow duration-200"
       style={containerStyle}
       elevation="mid"
     >
-
-      {/* Vertical lines / dots representing neurons (responsive) */}
       <svg className="absolute inset-2" viewBox="0 0 100 140" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
         <defs>
           <linearGradient id={`fcGrad-${color}`} x1="0%" y1="0%" x2="0%" y2="100%">
@@ -73,7 +74,6 @@ export default function FCNode({ data, selected }: NodeProps<FCNodeData>) {
           </linearGradient>
         </defs>
         {units ? (
-          // Dot grid based on units (approximate rows/cols)
           <g fill={color} opacity="0.28">
             {(() => {
               const dots: any[] = [];
@@ -113,7 +113,6 @@ export default function FCNode({ data, selected }: NodeProps<FCNodeData>) {
       </svg>
 
       <div className="relative z-10 text-center space-y-1">
-        {/* Dimension labels */}
         {(inputDim || outputDim) && (
           <div className="text-[10px] font-mono text-gray-400 mb-2">
             {inputDim && <span>In: {inputDim}</span>}
@@ -133,3 +132,4 @@ export default function FCNode({ data, selected }: NodeProps<FCNodeData>) {
     </NodeView>
   );
 }
+

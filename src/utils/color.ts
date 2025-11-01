@@ -18,3 +18,8 @@ export function hexToRgba(hex: string, alpha = 1): string {
   return `rgba(0,0,0,${alpha})`;
 }
 
+export function resolveNodeColor(semanticColor: string, data: any, semanticLocked: boolean): string {
+  const custom = data?.color as string | undefined;
+  if (semanticLocked) return semanticColor;
+  return custom || semanticColor;
+}

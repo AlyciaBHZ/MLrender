@@ -70,6 +70,11 @@ export default function PropertiesPanel() {
     const label = data.label ?? '';
     const formulaLabel = data.formulaLabel ?? '';
     const color = data.color ?? '#2563eb';
+    const colorMode: 'semantic' | 'custom' = (data.colorMode as any) === 'custom' ? 'custom' : 'semantic';
+    const showTypeRibbon: boolean = data.showTypeRibbon !== false;
+    const lodOverride: 'auto' | 'simple' | 'detailed' = (data.lodOverride as any) || 'auto';
+    const visualDensity: number = Number(data.visualDensity ?? 2);
+    const semanticColorsLocked = useDiagramStore((s) => s.semanticColorsLocked);
     const schema = getNodeSchema(selectedNode.type);
 
     const onLabelChange = (e: React.ChangeEvent<HTMLInputElement>) => updateNodeData(selectedNode.id, { label: e.target.value });
@@ -92,6 +97,44 @@ export default function PropertiesPanel() {
               onChange={onLabelChange}
               placeholder={t('panel.labelPlaceholder', { defaultValue: 'Node label' })}
             />
+          </div>
+          {/* Visual controls */}
+          <div className="mt-2 space-y-2">
+            <div className="text-xs font-medium text-gray-700">{t('panel.visual', { defaultValue: 'Visual' })}</div>
+            <label className="inline-flex items-center gap-2 text-sm">
+              <input type="checkbox" checked={showTypeRibbon} onChange={(e) => updateNodeData(selectedNode.id, { showTypeRibbon: e.target.checked })} />
+              <span>{t('panel.typeRibbon', { defaultValue: 'Type ribbon' })}</span>
+            </label>
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-xs text-gray-500">{t('panel.lod', { defaultValue: 'LOD' })}</span>
+              <select className="rounded border px-2 py-1" value={lodOverride}
+                onChange={(e) => updateNodeData(selectedNode.id, { lodOverride: e.target.value })}>
+                <option value="auto">{t('panel.lod.auto', { defaultValue: 'Auto' })}</option>
+                <option value="simple">{t('panel.lod.simple', { defaultValue: 'Simple' })}</option>
+                <option value="detailed">{t('panel.lod.detailed', { defaultValue: 'Detailed' })}</option>
+              </select>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-xs text-gray-500">{t('panel.density', { defaultValue: 'Visual density' })}</span>
+              <select className="rounded border px-2 py-1" value={visualDensity}
+                onChange={(e) => updateNodeData(selectedNode.id, { visualDensity: Number(e.target.value) || 2 })}>
+                <option value={1}>Low</option>
+                <option value={2}>Normal</option>
+                <option value={3}>High</option>
+              </select>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-xs text-gray-500">{t('panel.colorMode', { defaultValue: 'Color mode' })}</span>
+              <select className="rounded border px-2 py-1" value={colorMode}
+                disabled={semanticColorsLocked}
+                onChange={(e) => updateNodeData(selectedNode.id, { colorMode: e.target.value })}>
+                <option value="semantic">{t('panel.colorMode.semantic', { defaultValue: 'Semantic' })}</option>
+                <option value="custom">{t('panel.colorMode.custom', { defaultValue: 'Custom' })}</option>
+              </select>
+              {semanticColorsLocked && (
+                <span className="text-[11px] text-gray-400">{t('panel.colorMode.locked', { defaultValue: 'Locked globally' })}</span>
+              )}
+            </div>
           </div>
           {schema && (
             <div className="space-y-2">
@@ -172,7 +215,7 @@ export default function PropertiesPanel() {
           </div>
           <div>
             <label className="block text-xs text-gray-500 mb-1">{t('panel.color')}</label>
-            <input aria-label={t('panel.color')} type="color" value={color} onChange={onColorChange} />
+            <input aria-label={t('panel.color')} type="color" value={color} onChange={onColorChange} disabled={semanticColorsLocked || colorMode !== 'custom'} />
           </div>
           <div className="text-xs text-gray-500">{t('panel.id', { defaultValue: 'ID' })}: {selectedNode.id}</div>
           <div className="text-xs text-gray-500">{t('panel.type')}: {selectedNode.type}</div>

@@ -5,6 +5,8 @@ import { hexToRgba } from '@/utils/color';
 import MathText from '@/components/MathText';
 import NodeMarker from '@/components/NodeMarker';
 import { NodeRoleColor } from '@/ui/tokens';
+import { resolveNodeColor } from '@/utils/color';
+import { useDiagramStore } from '@/diagram/DiagramState';
 
 export type PoolingNodeData = {
   label?: string;
@@ -17,13 +19,14 @@ export type PoolingNodeData = {
 };
 
 export default function PoolingNode({ data, selected }: NodeProps<PoolingNodeData>) {
+  const semanticLocked = useDiagramStore((s) => s.semanticColorsLocked);
   const label = data?.label ?? 'MaxPool2D';
   const formulaLabel = data?.formulaLabel;
-  const color = data?.color ?? NodeRoleColor.pool;
+  const color = resolveNodeColor(NodeRoleColor.pool, data, semanticLocked);
   const poolType = data?.poolType ?? 'max';
   const poolSize = data?.poolSize ?? '2×2';
   const stride = data?.stride;
-  const visualization = data?.visualization ?? 'funnel'; // Default to funnel per spec
+  // const visualization = data?.visualization ?? 'funnel'; // reserved for future use
 
   const containerStyle = useMemo(
     () => ({
@@ -122,10 +125,7 @@ export default function PoolingNode({ data, selected }: NodeProps<PoolingNodeDat
           )}
         </g>
 
-        {/* Type label (top) */}
-        <text x="65" y="8" textAnchor="middle" fontSize="9" fontWeight="700" fill="#6b7280" letterSpacing="0.5">
-          {poolType.toUpperCase()}POOL
-        </text>
+        {/* Type label handled by ribbon */}
 
         {/* Stride parameter */}
         {stride && (

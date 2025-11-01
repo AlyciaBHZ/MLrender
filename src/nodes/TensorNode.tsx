@@ -3,6 +3,8 @@ import { Handle, Position, type NodeProps } from 'reactflow';
 import { hexToRgba } from '@/utils/color';
 import { NodeResizer } from '@reactflow/node-resizer';
 import { NodeRoleColor } from '@/ui/tokens';
+import { resolveNodeColor } from '@/utils/color';
+import { useDiagramStore } from '@/diagram/DiagramState';
 import MathText from '@/components/MathText';
 
 export type TensorNodeData = {
@@ -16,9 +18,10 @@ export type TensorNodeData = {
 };
 
 export default function TensorNode({ data, selected }: NodeProps<TensorNodeData>) {
+  const semanticLocked = useDiagramStore((s) => s.semanticColorsLocked);
   const label = data?.label ?? 'Tensor';
   const formulaLabel = data?.formulaLabel;
-  const color = data?.color ?? NodeRoleColor.tensor;
+  const color = resolveNodeColor(NodeRoleColor.tensor, data, semanticLocked);
   const depth = Math.max(3, Math.min(8, data?.depth ?? 5));
   const shape = data?.shape;
   const dtype = data?.dtype;
@@ -115,8 +118,7 @@ export default function TensorNode({ data, selected }: NodeProps<TensorNodeData>
           ))}
         </g>
 
-        {/* Type label */}
-        <text x="65" y="18" textAnchor="middle" fontSize="10" fontWeight="700" fill="#6b7280" letterSpacing="0.5">TENSOR</text>
+        {/* Type label handled by ribbon */}
 
         {/* Shape and dtype display */}
         {(shape || dtype) && (

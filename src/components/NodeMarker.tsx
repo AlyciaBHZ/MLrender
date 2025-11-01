@@ -43,7 +43,7 @@ export default function NodeMarker({ variant }: { variant?: string }) {
   const Icon = (map[key] || FCLayerIcon) as any;
   return (
     <div className="absolute top-1 right-1 opacity-90">
-      <Icon className="w-3.5 h-3.5" />
+      <Icon className="w-4.5 h-4.5" />
     </div>
   );
 }

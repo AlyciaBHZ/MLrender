@@ -2,6 +2,8 @@ import { useMemo } from 'react';
 import { Handle, Position, type NodeProps } from 'reactflow';
 import { hexToRgba } from '@/utils/color';
 import { NodeRoleColor } from '@/ui/tokens';
+import { resolveNodeColor } from '@/utils/color';
+import { useDiagramStore } from '@/diagram/DiagramState';
 import NodeView from '@/nodes/common/NodeView';
 import MathText from '@/components/MathText';
 import { HANDLE_CLASS } from '@/nodes/common/ports';
@@ -19,9 +21,10 @@ export type ConvNodeData = {
 };
 
 export default function ConvNode({ data, selected }: NodeProps<ConvNodeData>) {
+  const semanticLocked = useDiagramStore((s) => s.semanticColorsLocked);
   const label = data?.label ?? 'Conv2D';
   const formulaLabel = data?.formulaLabel;
-  const color = data?.color ?? NodeRoleColor.conv;
+  const color = resolveNodeColor(NodeRoleColor.conv, data, semanticLocked);
   const kernelSize = typeof (data as any)?.kernel === 'number'
     ? `${(data as any).kernel}×${(data as any).kernel}`
     : (data?.kernelSize ?? '3×3');
@@ -48,6 +51,7 @@ export default function ConvNode({ data, selected }: NodeProps<ConvNodeData>) {
       minHeight={160}
       role="core"
       typeAttr="conv"
+      typeRibbonLabel="CONV2D"
       containerClassName="px-2 py-2 min-w-[140px] min-h-[160px] flex flex-col items-center justify-center"
       style={containerStyle}
       elevation="mid"
@@ -90,7 +94,6 @@ export default function ConvNode({ data, selected }: NodeProps<ConvNodeData>) {
         </g>
 
         {/* Labels */}
-        <text x="80" y="15" textAnchor="middle" fontSize="10" fontWeight="700" fill="#6b7280" letterSpacing="0.5">CONV2D</text>
         {(channels || stride || typeof dilation === 'number' || typeof padding === 'number') && (
           <text x="80" y="145" textAnchor="middle" fontSize="9" fontWeight="500" fill="#9ca3af">
             {channels && `C=${channels}`}

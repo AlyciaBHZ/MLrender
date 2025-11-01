@@ -31,6 +31,7 @@ import PoolingNode from '@/nodes/PoolingNode';
 import NormalizationNode from '@/nodes/NormalizationNode';
 import EmbeddingNode from '@/nodes/EmbeddingNode';
 import TemplatesData from '@/data/templates';
+import { CanvasContext } from '@/diagram/CanvasContext';
 
 function CanvasInner() {
   const { t } = useTranslation();
@@ -189,6 +190,7 @@ function CanvasInner() {
   const isEmpty = (nodes?.length ?? 0) === 0 && (edges?.length ?? 0) === 0;
 
   return (
+    <CanvasContext.Provider value={{ zoom }}>
     <div ref={wrapperRef} className="h-full w-full" onDrop={onDrop} onDragOver={onDragOver}>
       <ReactFlow
         nodes={nodes}
@@ -238,6 +240,7 @@ function CanvasInner() {
         </div>
       )}
     </div>
+    </CanvasContext.Provider>
   );
 }
 

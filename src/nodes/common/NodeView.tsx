@@ -17,6 +17,8 @@ type Props = {
   dataAttrs?: Record<string, string>;
   children: React.ReactNode;
   elevation?: 'low' | 'mid' | 'high';
+  typeRibbonLabel?: string;
+  showTypeRibbon?: boolean;
 };
 
 export default function NodeView({
@@ -33,6 +35,8 @@ export default function NodeView({
   dataAttrs,
   children,
   elevation = 'mid',
+  typeRibbonLabel,
+  showTypeRibbon = true,
 }: Props) {
   const base = 'relative select-none w-full h-full';
   const cls = containerClassName ? `${base} ${containerClassName}` : base;
@@ -62,6 +66,11 @@ export default function NodeView({
     <div className={cls} style={mergedStyle} {...attrs}>
       <NodeResizer minWidth={minWidth} minHeight={minHeight} isVisible={selected} />
       {markerVariant && <NodeMarker variant={markerVariant} />}
+      {showTypeRibbon && typeRibbonLabel && (
+        <div className="absolute top-0 left-0 right-0 h-5 px-2 text-[10px] font-semibold tracking-wide text-gray-700/90 bg-white/85 border-b">
+          {typeRibbonLabel}
+        </div>
+      )}
       {children}
     </div>
   );

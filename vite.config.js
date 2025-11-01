@@ -1,14 +1,15 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-// 中文说明：Vite 基础配置，启用 React 插件与别名
+import { fileURLToPath } from 'node:url';
+import { dirname, resolve } from 'node:path';
+var __filename = fileURLToPath(import.meta.url);
+var __dirname = dirname(__filename);
 export default defineConfig({
     plugins: [react()],
-    server: {
-        port: 5173
-    },
+    server: { port: 5173 },
     resolve: {
         alias: {
-            '@': '/src'
-        }
-    }
+            '@': resolve(__dirname, 'src'),
+        },
+    },
 });

@@ -25,7 +25,10 @@ export const NodeRoleColor = {
 
   // Data & I/O
   data: '#4682B4',         // Steel blue - input/output
+  dataAlt: '#5A7FB8',      // Lighter data blue - embedding/io alt
   tensor: '#5F9EA0',       // Cadet blue - tensor operations
+  tensorAlt: '#5AA6A6',    // Teal - tensor alt visuals
+  embedding: '#5A7FB8',    // Use dataAlt for embeddings
 
   // Regularization & Utility
   dropout: '#A9A9A9',      // Dark gray - dropout layers
@@ -33,7 +36,7 @@ export const NodeRoleColor = {
 
   // Grouping
   group: '#708090',        // Slate gray - grouping containers
+  attn: '#DC143C',         // Alias for attention per spec (mlcd.attn)
 } as const;
 
 export type NodeVariant = keyof typeof NodeRoleColor;
-
