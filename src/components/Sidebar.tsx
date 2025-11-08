@@ -14,9 +14,51 @@ const TemplateIcon: React.FC<{ className?: string }> = ({ className }) => (
 
 type Category = CatalogCategory;
 type Item = CatalogItem;
+type Translate = ReturnType<typeof useTranslation>['t'];
 
-function Section({ cat, onDragStart, onItemClick }: { cat: Category; onDragStart: (e: React.DragEvent, type: string, data?: any) => void; onItemClick?: (item: Item) => void }) {
-  const { t } = useTranslation();
+const schemaKeyMap: Record<string, string> = {
+  fcNode: 'FC_LAYER',
+  mlpNode: 'MLP_LAYERS',
+  convNode: 'CONV_LAYER',
+  poolingNode: 'POOLING',
+  flattenNode: 'FLATTEN',
+  activationNode: 'ACTIVATION',
+  dropoutNode: 'DROPOUT',
+  dataNode: 'DATA',
+  tensorNode: 'TENSOR',
+  neuronNode: 'NEURON',
+  normalizationNode: 'BATCH_NORM',
+  embeddingNode: 'EMBEDDING',
+  attentionNode: 'ATTENTION',
+  rnnNode: 'RNN_LSTM',
+  boxNode: 'DEFAULT',
+  circleNode: 'DEFAULT',
+  groupNode: 'GROUP',
+};
+
+const filterTree = (cats: Category[], query: string): Category[] => {
+  const lower = query.trim().toLowerCase();
+  if (!lower) return cats;
+  const visit = (cat: Category): Category | null => {
+    const items = (cat.items ?? []).filter((item) => item.label.toLowerCase().includes(lower));
+    const children = (cat.children ?? []).map(visit).filter(Boolean) as Category[];
+    if (!items.length && !children.length) return null;
+    return { ...cat, items, children };
+  };
+  return cats.map(visit).filter(Boolean) as Category[];
+};
+
+function Section({
+  cat,
+  onDragStart,
+  onItemClick,
+  t,
+}: {
+  cat: Category;
+  onDragStart: (e: React.DragEvent, type: string, data?: any) => void;
+  onItemClick?: (item: Item) => void;
+  t: Translate;
+}) {
   const [open, setOpen] = React.useState(true);
   return (
     <div className="ml-2">
@@ -38,19 +80,21 @@ function Section({ cat, onDragStart, onItemClick }: { cat: Category; onDragStart
             return (
               <div
                 key={`${cat.id}-${type}-${label}`}
-                className={`flex items-center gap-2 rounded border bg-white px-2 py-1 ${draggable ? 'cursor-grab hover:bg-gray-50 active:cursor-grabbing' : 'hover:bg-gray-50 cursor-pointer'}`}
+                className={`flex items-center gap-2 rounded border bg-white px-2 py-1 ${
+                  draggable ? 'cursor-grab hover:bg-gray-50 active:cursor-grabbing' : 'cursor-pointer hover:bg-gray-50'
+                }`}
                 draggable={!!draggable}
                 onDragStart={(e) => draggable && onDragStart(e, type, data)}
-                onClick={() => clickable && onItemClick!(item)}
+                onClick={() => clickable && onItemClick?.(item)}
                 title={draggable ? t('sidebar.dragToCanvas', { label }) : hint || ''}
               >
-                <Icon className="w-5 h-5" />
+                <Icon className="h-5 w-5" />
                 <span className="text-gray-700">{label}</span>
               </div>
             );
           })}
           {(cat.children ?? []).map((child) => (
-            <Section key={child.id} cat={child} onDragStart={onDragStart} onItemClick={onItemClick} />
+            <Section key={child.id} cat={child} onDragStart={onDragStart} onItemClick={onItemClick} t={t} />
           ))}
         </div>
       )}
@@ -62,32 +106,12 @@ export default function Sidebar() {
   const { t } = useTranslation();
   const [query, setQuery] = React.useState('');
 
-  const onDragStart = (event: React.DragEvent, nodeType: string, data?: any) => {
+  const onDragStart = React.useCallback((event: React.DragEvent, nodeType: string, data?: any) => {
     if (nodeType === 'template' && data?.templateId) {
       event.dataTransfer.setData('application/x-mlcd-template', String(data.templateId));
       event.dataTransfer.effectAllowed = 'move';
       return;
     }
-
-    // Try to find corresponding schema key from node type
-    // Map node types to schema keys (e.g., 'fcNode' -> 'FC_LAYER')
-    const schemaKeyMap: Record<string, string> = {
-      'fcNode': 'FC_LAYER',
-      'mlpNode': 'MLP_LAYERS',
-      'convNode': 'CONV_LAYER',
-      'poolingNode': 'POOLING',
-      'flattenNode': 'FLATTEN',
-      'activationNode': 'ACTIVATION',
-      'dropoutNode': 'DROPOUT',
-      'dataNode': 'DATA',
-      'tensorNode': 'TENSOR',
-      'neuronNode': 'NEURON',
-      'normalizationNode': 'BATCH_NORM',
-      'embeddingNode': 'EMBEDDING',
-      'boxNode': 'DEFAULT',
-      'circleNode': 'DEFAULT',
-      'groupNode': 'GROUP',
-    };
 
     const schemaKey = schemaKeyMap[nodeType];
     let enrichedData = data ?? {};
@@ -105,33 +129,49 @@ export default function Sidebar() {
     event.dataTransfer.setData('application/reactflow', nodeType);
     event.dataTransfer.setData('application/x-mlcd-data', JSON.stringify(enrichedData));
     event.dataTransfer.effectAllowed = 'move';
-  };
+  }, []);
 
-  const filterTree = (cats: Category[], q: string): Category[] => {
-    const lower = q.trim().toLowerCase();
-    if (!lower) return cats;
-    const visit = (cat: Category): Category | null => {
-      const items = (cat.items ?? []).filter((it) => it.label.toLowerCase().includes(lower));
-      const children = (cat.children ?? []).map(visit).filter(Boolean) as Category[];
-      if (items.length === 0 && children.length === 0) return null;
-      return { ...cat, items, children };
-    };
-    return cats.map(visit).filter(Boolean) as Category[];
-  };
-
-  const insertTemplateById = (templateId: string) => {
+  const insertTemplateById = React.useCallback((templateId: string) => {
     const detail = { templateId, at: 'center' } as any;
     window.dispatchEvent(new CustomEvent('mlcd-insert-template', { detail }));
-  };
+  }, []);
 
-  const TEMPLATES_CAT: Category = {
-    id: 'templates',
-    title: 'Templates',
-    items: TemplatesData.map((tmpl) => ({ type: 'template', label: tmpl.name, Icon: TemplateIcon, draggable: true, hint: t('sidebar.template.hint'), data: { templateId: tmpl.id } })),
-  };
+  const templateItems = React.useMemo(
+    () =>
+      TemplatesData.map((tmpl) => ({
+        type: 'template',
+        label: tmpl.name,
+        Icon: TemplateIcon,
+        draggable: true,
+        hint: t('sidebar.template.hint'),
+        data: { templateId: tmpl.id },
+      })),
+    [t],
+  );
 
-  const ALL_CATS = [...SidebarCatalog, TEMPLATES_CAT];
-  const cats = filterTree(ALL_CATS, query);
+  const templatesCategory = React.useMemo<Category>(
+    () => ({
+      id: 'templates',
+      title: 'Templates',
+      items: templateItems,
+    }),
+    [templateItems],
+  );
+
+  const catalogWithTemplates = React.useMemo(
+    () => [...SidebarCatalog, templatesCategory],
+    [templatesCategory],
+  );
+
+  const cats = React.useMemo(() => filterTree(catalogWithTemplates, query), [catalogWithTemplates, query]);
+
+  const handleItemClick = React.useCallback(
+    (item: Item) => {
+      const templateId = item.data?.templateId as string | undefined;
+      if (templateId) insertTemplateById(templateId);
+    },
+    [insertTemplateById],
+  );
 
   return (
     <aside className="border-r bg-gray-50 p-3 text-sm h-full min-h-0 overflow-y-auto overscroll-contain">
@@ -149,10 +189,8 @@ export default function Sidebar() {
             key={cat.id}
             cat={cat}
             onDragStart={onDragStart}
-            onItemClick={(item) => {
-              const tid = item.data?.templateId as string | undefined;
-              if (tid) insertTemplateById(tid);
-            }}
+            onItemClick={handleItemClick}
+            t={t}
           />
         ))}
       </div>

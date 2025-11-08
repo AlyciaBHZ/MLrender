@@ -1,4 +1,4 @@
-﻿import { create } from 'zustand';
+import { create } from 'zustand';
 import {
   type Edge,
   type Node,
@@ -11,14 +11,14 @@ import {
 } from 'reactflow';
 import { buildGroupFromSelection, moveSelectionIntoGroup, ungroupSelectedNodes } from './grouping';
 
-// ä¸­æ–‡è¯´æ˜Žï¼šé›†ä¸­ç®¡ç†å›¾è¡¨çŠ¶æ€ï¼ˆèŠ‚ç‚¹ä¸Žè¿žçº¿ï¼‰ï¼Œæ–¹ä¾¿åŽç»­æ‰©å±•ä¿å­˜/åŠ è½½/æ’¤é”€ç­‰
+// 中文说明：集中管理图表状态（节点与连线），方便后续支持保存、加载与撤销操作。
 export type DiagramState = {
   nodes: Node[];
   edges: Edge[];
   historyPast: { nodes: Node[]; edges: Edge[] }[];
   historyFuture: { nodes: Node[]; edges: Edge[] }[];
   isUndoRedo: boolean;
-  // UI è®¾ç½®
+  // UI 设置
   snapToGrid: boolean;
   snapGrid: [number, number];
   semanticColorsLocked: boolean;
@@ -54,7 +54,7 @@ function snapshot(state: Pick<DiagramState, 'nodes' | 'edges'>) {
 }
 
 export const useDiagramStore = create<DiagramState>()((set, get) => ({
-  // åˆå§‹ä¸ºç©ºå›¾
+  // 初始为空图
   nodes: [],
   edges: [],
   historyPast: [],
@@ -64,7 +64,7 @@ export const useDiagramStore = create<DiagramState>()((set, get) => ({
   snapGrid: [8, 8],
   semanticColorsLocked: true,
 
-  // å¤„ç†èŠ‚ç‚¹å˜æ›´ï¼ˆç§»åŠ¨ã€é€‰ä¸­ã€å°ºå¯¸ç­‰ï¼‰
+  // 处理节点变更（移动、选中、尺寸等）
   onNodesChange: (changes) => {
     const { nodes, edges, isUndoRedo, historyPast } = get();
     const nextNodes = applyNodeChanges(changes, nodes);
@@ -75,7 +75,7 @@ export const useDiagramStore = create<DiagramState>()((set, get) => ({
     set({ nodes: nextNodes, isUndoRedo: false });
   },
 
-  // å¤„ç†è¿žçº¿å˜æ›´
+  // 处理连线变更
   onEdgesChange: (changes) => {
     const { nodes, edges, isUndoRedo, historyPast } = get();
     const nextEdges = applyEdgeChanges(changes, edges);
@@ -86,7 +86,7 @@ export const useDiagramStore = create<DiagramState>()((set, get) => ({
     set({ edges: nextEdges, isUndoRedo: false });
   },
 
-  // è¿žæŽ¥ä¸¤ä¸ªèŠ‚ç‚¹æ—¶è§¦å‘ï¼Œç”Ÿæˆæ–°çš„ edge
+  // 连接两个节点时触发，生成新的 edge
   onConnect: (connection) => {
     const { nodes, edges, historyPast } = get();
     const past = [...historyPast, snapshot({ nodes, edges })].slice(-MAX_HISTORY);
@@ -111,14 +111,14 @@ export const useDiagramStore = create<DiagramState>()((set, get) => ({
     });
   },
 
-  // æ–°å¢žèŠ‚ç‚¹ï¼ˆç”¨äºŽæ‹–æ‹½æ”¾ç½®ï¼‰
+  // 新增节点（用于拖拽放置）
   addNode: (node) => {
     const { nodes, edges, historyPast } = get();
     const past = [...historyPast, snapshot({ nodes, edges })].slice(-MAX_HISTORY);
     set({ nodes: [...nodes, node], historyPast: past, historyFuture: [] });
   },
 
-  // æ ¹æ® id æ›´æ–°èŠ‚ç‚¹ dataï¼ˆæµ…åˆå¹¶ï¼‰
+  // 根据 id 更新节点 data（浅合并）
   updateNodeData: (id, data) => {
     const { nodes, edges, historyPast } = get();
     const past = [...historyPast, snapshot({ nodes, edges })].slice(-MAX_HISTORY);
@@ -129,14 +129,14 @@ export const useDiagramStore = create<DiagramState>()((set, get) => ({
     });
   },
 
-  // è½½å…¥æ•´å¼ å›¾
+  // 载入整张图
   setDiagram: ({ nodes, edges }) => {
     const s = get();
     const past = [...s.historyPast, snapshot({ nodes: s.nodes, edges: s.edges })].slice(-MAX_HISTORY);
     set({ nodes, edges, historyPast: past, historyFuture: [] });
   },
 
-  // æ›´æ–°å•æ¡è¾¹ï¼ˆæ ·å¼/æ•°æ®ï¼‰
+  // 更新单条边（样式或数据）
   updateEdge: (id, updater) => {
     const { nodes, edges, historyPast } = get();
     const past = [...historyPast, snapshot({ nodes, edges })].slice(-MAX_HISTORY);
@@ -158,7 +158,7 @@ export const useDiagramStore = create<DiagramState>()((set, get) => ({
   setSnapGrid: (v) => set({ snapGrid: v }),
   setSemanticColorsLocked: (v) => set({ semanticColorsLocked: v }),
 
-  // åˆ é™¤é€‰ä¸­çš„èŠ‚ç‚¹ä¸Žè¿žçº¿
+  // 删除选中的节点与连线
   removeSelected: () => {
     const { nodes, edges, historyPast } = get();
     const selectedIds = new Set(nodes.filter((n) => n.selected).map((n) => n.id));
@@ -168,7 +168,7 @@ export const useDiagramStore = create<DiagramState>()((set, get) => ({
     set({ nodes: nextNodes, edges: nextEdges, historyPast: past, historyFuture: [] });
   },
 
-  // å¤åˆ¶é€‰ä¸­çš„èŠ‚ç‚¹ï¼ˆç®€å•åç§»ï¼Œä¸å¤åˆ¶è¾¹ï¼‰
+  // 复制选中的节点（简单偏移，不复制边）
   duplicateSelected: () => {
     const { nodes, edges, historyPast } = get();
     const selected = nodes.filter((n) => n.selected);
@@ -204,7 +204,7 @@ export const useDiagramStore = create<DiagramState>()((set, get) => ({
     set({ nodes: nextNodes, historyPast: past, historyFuture: [] });
   },
 
-  // Ungroup: lift selected nodes out of their parent group to root coordinates.
+  // Ungroup: lift selected nodes (or children of selected groups) out of their parent group.
   ungroupSelected: () => {
     const { nodes, edges, historyPast } = get();
     const nextNodes = ungroupSelectedNodes(nodes);
@@ -212,7 +212,7 @@ export const useDiagramStore = create<DiagramState>()((set, get) => ({
     set({ nodes: nextNodes, historyPast: past, historyFuture: [] });
   },
 
-  // é‡ç½®å›¾è¡¨
+  // 重置图表
   reset: () => {
     const { nodes, edges, historyPast } = get();
     const past = [...historyPast, snapshot({ nodes, edges })].slice(-MAX_HISTORY);
@@ -235,5 +235,3 @@ export const useDiagramStore = create<DiagramState>()((set, get) => ({
     set({ nodes: next.nodes, edges: next.edges, historyPast: past, historyFuture: future, isUndoRedo: true });
   },
 }));
-
-

@@ -116,3 +116,11 @@ export const TensorIcon = ({ className = 'w-5 h-5' }: { className?: string }) =>
     <path d="M5 9l4-2m0 10 4-2m2-10 4 2m0 10-4 2" stroke="#3b82f6" strokeWidth="1.5" opacity="0.6" />
   </svg>
 );
+
+export const RNNIcon = ({ className = 'w-5 h-5' }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="8" y="9" width="8" height="6" rx="2" stroke="#8B4789" strokeWidth="2" fill="#f3e8ff" />
+    <path d="M14 12 C18 8, 18 16, 14 12" stroke="#8B4789" strokeWidth="2" fill="none" />
+    <path d="M4 12h4M16 12h4" stroke="#8B4789" strokeWidth="2" strokeLinecap="round" />
+  </svg>
+);

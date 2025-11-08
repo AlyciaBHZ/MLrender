@@ -7,12 +7,13 @@ import {
   FlattenIcon,
   EmbeddingIcon,
   AttentionIcon,
+  RNNIcon,
   PoolIcon,
   LossIcon,
   InputDataIcon,
 } from '@/assets/icons/BasicIcons';
 
-// 中文说明：小型节点内部标记，根据 variant 渲染对应的迷你图标
+// Marker overlay variants that communicate semantic node types.
 export type MarkerVariant =
   | 'fc'
   | 'activation'
@@ -21,11 +22,12 @@ export type MarkerVariant =
   | 'flatten'
   | 'embedding'
   | 'attention'
+  | 'rnn'
   | 'pool'
   | 'loss'
   | 'input';
 
-const map: Record<MarkerVariant, React.ComponentType<{ className?: string }>> = {
+const iconMap: Record<MarkerVariant, React.ComponentType<{ className?: string }>> = {
   fc: FCLayerIcon,
   activation: ActivationIcon,
   batchnorm: BatchNormIcon,
@@ -33,17 +35,26 @@ const map: Record<MarkerVariant, React.ComponentType<{ className?: string }>> = 
   flatten: FlattenIcon,
   embedding: EmbeddingIcon,
   attention: AttentionIcon,
+  rnn: RNNIcon,
   pool: PoolIcon,
   loss: LossIcon,
   input: InputDataIcon,
 };
 
-export default function NodeMarker({ variant }: { variant?: string }) {
-  const key = (variant || 'fc') as MarkerVariant;
-  const Icon = (map[key] || FCLayerIcon) as any;
+const DEFAULT_VARIANT: MarkerVariant = 'fc';
+
+function resolveVariant(value?: string): MarkerVariant {
+  if (!value) return DEFAULT_VARIANT;
+  return (value in iconMap ? value : DEFAULT_VARIANT) as MarkerVariant;
+}
+
+const NodeMarker = React.memo(function NodeMarker({ variant }: { variant?: string }) {
+  const Icon = iconMap[resolveVariant(variant)];
   return (
-    <div className="absolute top-1 right-1 opacity-90">
-      <Icon className="w-4.5 h-4.5" />
+    <div className="absolute top-1 right-1 opacity-90" aria-hidden="true">
+      <Icon className="h-4.5 w-4.5" />
     </div>
   );
-}
+});
+
+export default NodeMarker;

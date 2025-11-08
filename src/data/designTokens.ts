@@ -277,8 +277,8 @@ export const getNodeTypeFromKey = (componentKey: string): string => {
     OPTIMIZER: 'circle',
 
     // Advanced
-    ATTENTION: 'box',
-    RNN_LSTM: 'box',
+    ATTENTION: 'attentionNode',
+    RNN_LSTM: 'rnnNode',
 
     // Group
     GROUP: 'group',

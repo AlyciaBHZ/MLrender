@@ -30,6 +30,8 @@ import FlattenNode from '@/nodes/FlattenNode';
 import PoolingNode from '@/nodes/PoolingNode';
 import NormalizationNode from '@/nodes/NormalizationNode';
 import EmbeddingNode from '@/nodes/EmbeddingNode';
+import AttentionNode from '@/nodes/AttentionNode';
+import RNNNode from '@/nodes/RNNNode';
 import TemplatesData from '@/data/templates';
 import { CanvasContext } from '@/diagram/CanvasContext';
 
@@ -67,6 +69,8 @@ function CanvasInner() {
     poolingNode: PoolingNode,
     normalizationNode: NormalizationNode,
     embeddingNode: EmbeddingNode,
+    attentionNode: AttentionNode,
+    rnnNode: RNNNode,
   }), []);
 
   const edgeTypes = useMemo(() => ({

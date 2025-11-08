@@ -2,25 +2,28 @@ import React from 'react';
 
 type Props = {
   title?: string;
-  onClick?: React.MouseEventHandler<HTMLButtonElement>;
-  className?: string;
-  children?: React.ReactNode;
   ariaLabel?: string;
-};
+  children?: React.ReactNode;
+} & Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'title'>;
 
 const base = 'text-xs px-2 py-1 rounded border hover:bg-gray-50';
 
-export default function IconButton({ title, onClick, className, children, ariaLabel }: Props) {
+const IconButton = React.forwardRef<HTMLButtonElement, Props>(function IconButton(
+  { title, ariaLabel, children, className, type = 'button', ...rest },
+  ref,
+) {
   return (
     <button
-      type="button"
+      ref={ref}
+      type={type}
       className={className ? `${base} ${className}` : base}
       title={title}
       aria-label={ariaLabel || title}
-      onClick={onClick}
+      {...rest}
     >
       {children}
     </button>
   );
-}
+});
 
+export default IconButton;

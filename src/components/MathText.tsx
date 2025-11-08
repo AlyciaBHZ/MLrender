@@ -1,7 +1,11 @@
 import { useEffect, useRef } from 'react';
 
 declare global {
-  interface Window { katex?: any }
+  interface Window {
+    katex?: {
+      render: (expression: string, element: HTMLElement, options?: Record<string, unknown>) => void;
+    };
+  }
 }
 
 type Props = {
@@ -11,23 +15,32 @@ type Props = {
   title?: string;
 };
 
-export default function MathText({ text, enabled, className, title }: Props) {
+export default function MathText({ text, enabled = true, className, title }: Props) {
   const spanRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     const el = spanRef.current;
     if (!el) return;
-    if (enabled && window.katex) {
-      try {
-        window.katex.render(text, el, { throwOnError: false, displayMode: false });
-        return () => { el.innerHTML = ''; };
-      } catch {
-        el.textContent = text;
+
+    const renderAsLatex = Boolean(enabled && typeof window !== 'undefined' && window.katex);
+    if (!renderAsLatex) {
+      el.textContent = text;
+      return undefined;
+    }
+
+    try {
+      window.katex!.render(text, el, { throwOnError: false, displayMode: false });
+    } catch (error) {
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn('Failed to render KaTeX string', error);
       }
-    } else {
       el.textContent = text;
     }
+
+    return () => {
+      el.textContent = '';
+    };
   }, [text, enabled]);
 
-  return <span ref={spanRef} className={className} title={title} />;
+  return <span ref={spanRef} className={className} title={title ?? text} aria-label={title ?? text} />;
 }

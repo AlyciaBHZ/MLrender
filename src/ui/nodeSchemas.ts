@@ -121,6 +121,8 @@ export function getNodeSchema(nodeType?: string): NodeSchema | undefined {
     'neuronNode': 'NEURON',
     'normalizationNode': 'BATCH_NORM',
     'embeddingNode': 'EMBEDDING',
+    'attentionNode': 'ATTENTION',
+    'rnnNode': 'RNN_LSTM',
     'boxNode': 'DEFAULT',
     'circleNode': 'DEFAULT',
     'groupNode': 'GROUP',

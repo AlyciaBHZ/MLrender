@@ -1,4 +1,4 @@
-﻿import type { Node } from 'reactflow';
+import type { Node } from 'reactflow';
 import { useDiagramStore } from './DiagramState';
 
 type Bounds = { x: number; y: number; w: number; h: number };
@@ -90,12 +90,32 @@ export function moveSelectionIntoGroup(nodes: Node[], groupId: string): Node[] {
 
 export function ungroupSelectedNodes(nodes: Node[]): Node[] {
   const byId = buildIndex(nodes);
-  return nodes.map((n) => {
-    if (!n.selected || !(n as any).parentNode) return n;
-    const abs = getAbsolutePosition(n, byId);
-    const { parentNode, extent, ...rest } = n as any;
-    return { ...rest, position: abs } as Node;
-  });
+  const selectedGroupIds = new Set(nodes.filter((n) => n.selected && n.type === 'groupNode').map((n) => n.id));
+
+  return nodes.reduce<Node[]>((acc, node) => {
+    const parentId = (node as any).parentNode as string | undefined;
+    const parentSelected = parentId ? selectedGroupIds.has(parentId) : false;
+    const needsUngroup = parentSelected || (node.selected && !!parentId);
+
+    // Drop the group wrapper entirely once it is ungrouped.
+    if (node.type === 'groupNode' && selectedGroupIds.has(node.id)) {
+      return acc;
+    }
+
+    if (!needsUngroup) {
+      acc.push(node);
+      return acc;
+    }
+
+    const abs = getAbsolutePosition(node, byId);
+    const { parentNode, extent, ...rest } = node as any;
+    acc.push({
+      ...rest,
+      position: abs,
+      selected: node.selected || parentSelected,
+    } as Node);
+    return acc;
+  }, []);
 }
 
 // Backward compatible helper that mutates state (used by older code paths)

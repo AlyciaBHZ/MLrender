@@ -10,9 +10,9 @@ Interactive editor for machine learning diagrams built with React, TypeScript, V
 
 ## Current Tasks (P3.2 / P3.3 / P5.1)
 - Date: 2025-10-14
-- P3.2 Alignment (F_ALIGN): [x] Done — toolbar controls in `src/components/Toolbar.tsx`
-- P3.3 Grouping (F_GROUP): [ ] TODO — refine UX, nested grouping rules
-- P5.1 Export (F_EXPORT): [ ] TODO — more formats (SVG/Mermaid), shareable links
+- P3.2 Alignment (F_ALIGN): [x] Done - toolbar controls in `src/components/Toolbar.tsx`
+- P3.3 Grouping (F_GROUP): [ ] TODO - refine UX, nested grouping rules
+- P5.1 Export (F_EXPORT): [ ] TODO - more formats (SVG/Mermaid), shareable links
 
 Tips:
 - When updating this section, run `npm run progress:date` to refresh the date line.

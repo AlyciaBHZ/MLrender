@@ -14,6 +14,7 @@ import {
   FlattenIcon,
   EmbeddingIcon,
   AttentionIcon,
+  RNNIcon,
   LossIcon,
   OptimIcon,
   TensorIcon,
@@ -173,8 +174,18 @@ export const SidebarCatalog: CatalogCategory[] = [
             id: 'core.embed_attn.attention',
             title: 'Attention Primitives',
             items: [
-              { type: 'boxNode', label: 'Multi-Head Attention', Icon: AttentionIcon, data: { label: 'Multi-Head Attention', typeLabel: 'Attention', variant: 'attention', color: '#a78bfa', width: 200 } },
-              { type: 'boxNode', label: 'ScaledDotProductAttention', Icon: AttentionIcon, data: { label: 'ScaledDotProductAttention', typeLabel: 'Attention', variant: 'attention', color: '#a78bfa', width: 220 } },
+              { type: 'attentionNode', label: 'Multi-Head Attention', Icon: AttentionIcon, data: { label: 'Multi-Head Attention', typeLabel: 'Attention', variant: 'attention', color: '#DC143C', width: 140, numHeads: 8 } },
+              { type: 'attentionNode', label: 'ScaledDotProductAttention', Icon: AttentionIcon, data: { label: 'Scaled Dot-Product', typeLabel: 'Attention', variant: 'attention', color: '#DC143C', width: 140, numHeads: 1 } },
+            ],
+          },
+          {
+            id: 'core.embed_attn.rnn',
+            title: 'Recurrent Layers',
+            items: [
+              { type: 'rnnNode', label: 'RNN', Icon: RNNIcon, data: { label: 'RNN', typeLabel: 'RNN', variant: 'rnn', color: '#8B4789', width: 140, cellType: 'RNN', hiddenSize: 256 } },
+              { type: 'rnnNode', label: 'LSTM', Icon: RNNIcon, data: { label: 'LSTM', typeLabel: 'LSTM', variant: 'rnn', color: '#8B4789', width: 140, cellType: 'LSTM', hiddenSize: 256 } },
+              { type: 'rnnNode', label: 'GRU', Icon: RNNIcon, data: { label: 'GRU', typeLabel: 'GRU', variant: 'rnn', color: '#8B4789', width: 140, cellType: 'GRU', hiddenSize: 256 } },
+              { type: 'rnnNode', label: 'Bidirectional LSTM', Icon: RNNIcon, data: { label: 'BiLSTM', typeLabel: 'LSTM', variant: 'rnn', color: '#8B4789', width: 140, cellType: 'LSTM', hiddenSize: 256, bidirectional: true } },
             ],
           },
         ],
